@@ -42,6 +42,7 @@ class Demand(Event):
         @type name: L{str}
         """
         Event.__init__(self, sector, name=name)
+        # print size, phenomenon, sector
         self.phenomenon = phenomenon
         self.size = size
         self.valueSchedule = valueSchedule

@@ -54,7 +54,8 @@ if __name__ == '__main__':
     elif args.logging == 'error':
         level = logging.ERROR
     logging.basicConfig(level=level)
-    
+
+    print args
     # count the number of players if not specified
     if args.numPlayers is None:
         numPlayers = 0

@@ -58,6 +58,7 @@ class Game(object):
         @param numSectors: the number of sectors
         @type numSectors: L{int}
         """
+        # print "Initializing GAME"
         self.numSectors = numSectors
         self.altitudes = altitudes
         self.numPlayers = numPlayers
@@ -243,7 +244,7 @@ class Game(object):
                 else None)
         return None
     
-    def generateContext(self, seed=0, ops='', fops=''):
+    def generateContext(self, seed=0, ops='', fops='', costsgl = 50, costisl = 20):
         """
         Generates the context for this game.
         @param seed: the seed
@@ -266,6 +267,7 @@ class Game(object):
         for eType in self.eventTypes:
             for i in range(eType[0]):
                 if eType[1] == 'demand':
+                    # print "e type is demand "
                     events.append(Demand(sector=None,
                                          phenomenon=eType[2]['phenomenon'],
                                          size=eType[2]['size'],
@@ -317,7 +319,9 @@ class Game(object):
                                     operations=operations,
                                     elements=[]))
         # parse federation operations strategy
+
         foperations = None
+        print "fops:", fops
         if re.match('d', fops):
             # parse centralized operations strategy
             planningHorizon = 6
@@ -348,8 +352,8 @@ class Game(object):
             planningHorizon = 6
             storagePenalty = -100
             islPenalty = -10
-            costSGL = 50
-            costISL = 20
+            costSGL = costsgl
+            costISL = costisl
             if re.match('x\d+,\d+,\d+,(?:a|\d+),\d+',fops) is not None:
                 # case xG,I,H,s,i:  SGL fixed cost G,
                 #                   ISL fixed cost I,

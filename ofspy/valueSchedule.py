@@ -29,6 +29,7 @@ class ValueSchedule(object):
         @type defaultValue: L{float}
         """
         self.timeValuePairs = sorted(timeValuePairs, key=operator.itemgetter(0))
+        # print timeValuePairs
         self.defaultValue = defaultValue
     
     def getValueAt(self, time):
@@ -38,6 +39,7 @@ class ValueSchedule(object):
         @type time: L{float}
         @return: L{float}
         """
+        # print self.timeValuePairs
         for tvp in self.timeValuePairs:
             if time <= tvp[0]:
                 return tvp[1]

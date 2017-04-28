@@ -170,6 +170,7 @@ class Federate(Controller):
             element.tick(sim)
         for contract in self.contracts:
             contract.tick(sim)
+        # print "Tick cash: ", self.cash
     
     def tock(self):
         """
@@ -180,3 +181,5 @@ class Federate(Controller):
             element.tock()
         for contract in self.contracts:
             contract.tock()
+
+        # print "Tock cash: ", self.cash

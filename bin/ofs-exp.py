@@ -26,6 +26,7 @@ sys.path.append(os.path.abspath('..'))
 db = None # lazy-load if required
 
 from ofspy.ofs import OFS
+import socket
 
 def enumStations(player, sector, sgl):
     """
@@ -478,6 +479,8 @@ def execute(dbHost, dbPort, dbName, start, stop, cases, numPlayers,
     @param fops: the federation operations definition
     @type fops: L{str}
     """
+    # print "cases:", cases
+    # print start, stop
     executions = [(dbHost, dbPort, dbName,
                    [e for e in elements.split(' ') if e != ''],
                    numPlayers, initialCash, numTurns, seed, ops, fops)
@@ -514,12 +517,17 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
     @type fops: L{str}
     @return: L{list}
     """
+    # print "elements:", elements
     global db
-    
+    dbHost = socket.gethostbyname(socket.gethostname())
+    # print dbHost, dbPort, dbName, db
+
     if db is None and dbHost is None:
+        # print "db is None adn dbHOst is None"
         return executeCase((elements, numPlayers, initialCash,
                             numTurns, seed, ops, fops))
     elif db is None and dbHost is not None:
+        # print "read from database"
         db = pymongo.MongoClient(dbHost, dbPort).ofs
         
     query = {u'elements': ' '.join(elements),
@@ -529,10 +537,12 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
              u'seed':seed,
              u'ops':ops,
              u'fops': fops}
+
     doc = None
     if dbName is not None:
         doc = db[dbName].find_one(query)
     if doc is None:
+        db.results.remove({})
         doc = db.results.find_one(query)
         if doc is None:
             results = executeCase((elements, numPlayers, initialCash, 
@@ -546,8 +556,10 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
                    u'fops': fops,
                    u'results': results}
             db.results.insert_one(doc)
+
         if dbName is not None:
             db[dbName].insert_one(doc)
+
     return [tuple(result) for result in doc[u'results']]
 
 def executeCase((elements, numPlayers, initialCash, numTurns, seed, ops, fops)):
@@ -572,6 +584,7 @@ def executeCase((elements, numPlayers, initialCash, numTurns, seed, ops, fops)):
                numTurns=numTurns, seed=seed, ops=ops, fops=fops).execute()
     
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser(description="This program runs an OFS experiment.")
     parser.add_argument('experiment', type=str, nargs='+',
                         help='the experiment to run: masv or bvc')

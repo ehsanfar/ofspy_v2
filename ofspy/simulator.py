@@ -53,9 +53,13 @@ class Simulator(Observable):
     def advance(self):
         if not self.isComplete():
             for entity in self.entities:
+                # print "simulator entity:", entity
                 entity.tick(self)
+
             for entity in self.entities:
+                # print [[g.cash for g in f.getFederates()] for f in entity.federations]
                 entity.tock()
+                # print [[g.cash for g in f.getFederates()] for f in entity.federations]
             self.time += self.timeStep
             self.trigger('advance', self.time)
             if self.isComplete():

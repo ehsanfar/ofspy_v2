@@ -21,7 +21,9 @@ from .simulator import Simulator
 
 class OFS(object):
     def __init__(self, elements, numPlayers, initialCash,
-                 numTurns, seed, ops, fops):
+                 numTurns, seed, ops, fops, costsgl = 50, costisl = 20):
+
+        # print elements, numPlayers, initialCash, numTurns, seed, ops, fops
         """
         @param elements: elements
         @type elements: L{str}
@@ -38,10 +40,11 @@ class OFS(object):
         @param fops: federation operations specification
         @type fops: L{str}
         """
+        # print "fops:", fops
         self.game = Game(numPlayers=numPlayers,
                          initialCash=initialCash)
         self.context = self.game.generateContext(
-            seed=seed, ops=ops, fops=fops)
+            seed=seed, ops=ops, fops=fops, costsgl=costsgl, costisl=costisl)
         self.sim = Simulator(entities=[self.context],
                              initTime=0,  timeStep=1,
                              maxTime=numTurns)
@@ -111,4 +114,5 @@ class OFS(object):
         for federate in [federate for federation in self.context.federations
                          for federate in federation.federates]:
             results.append((federate.initialCash, federate.cash))
+
         return results

@@ -55,3 +55,4 @@ class Operations(object):
                                / math.pow(sum(counts),1), values)
             self.penaltyMemo[element] = -1*max(100, expValMax) # minimum penalty 100
         return self.penaltyMemo[element]
+

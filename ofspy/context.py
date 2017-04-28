@@ -332,13 +332,15 @@ class Context(Entity):
                          for federate in federation.federates]
         random.shuffle(federates, random=self.orderStream.random)
         for federate in federates:
+            # print "Pre federate operation cash:", federate.cash
             federate.operations.execute(federate, self)
+            # print "Post federate operation cash:", federate.cash
         
         federations = self.federations[:]
         random.shuffle(federations, random=self.orderStream.random)
         for federation in federations:
             federation.operations.execute(federation, self)
-        
+
         for federate in [federate for federation in self.federations
                          for federate in federation.federates]:
             logging.info('{0} has {1} cash at time {2}'
@@ -351,11 +353,14 @@ class Context(Entity):
         super(Context, self).tock()
         for federation in self.federations:
             federation.tock()
-        
+
+
         self.autoDefault()
         self.time = self._nextTime
         self.trigger('advance', self, self.time)
         self.logState()
         self.revealEvents()
         self.resolveDisturbances()
+        # print [[g.cash for g in f.getFederates()] for f in self.federations]
         self.executeOperations()
+        # print [[g.cash for g in f.getFederates()] for f in self.federations]

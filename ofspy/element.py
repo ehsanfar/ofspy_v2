@@ -672,9 +672,12 @@ class Element(Entity):
         """
         super(Element, self).tick(sim)
         if sim.entity('context') is not None:
+            # print "Sim Entity:", sim.entity('context')
+            # print sim.
             self._nextLocation = sim.entity('context').propagate(
                 self.location, sim.timeStep)
         for module in self.modules:
+            # print "Modules:", module
             module.tick(sim)
     
     def tock(self):
