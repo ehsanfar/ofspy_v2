@@ -676,7 +676,7 @@ if __name__ == '__main__':
             numPlayers = args.numPlayers
 
         if 'x' in args.fops:
-            for costsgl in range(0, 1000, 50):
+            for costsgl in range(0, 1501, 100):
                 print "cost SGL:", costsgl
                 costisl = costsgl/2.
                 execute(args.dbHost, args.dbPort, None, args.start, args.stop,
