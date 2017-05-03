@@ -675,17 +675,41 @@ if __name__ == '__main__':
         else:
             numPlayers = args.numPlayers
 
-        if 'x' in args.fops:
-            for costsgl in range(0, 1501, 100):
-                print "cost SGL:", costsgl
-                costisl = costsgl/2.
-                execute(args.dbHost, args.dbPort, None, args.start, args.stop,
-                    [' '.join(args.experiment)],
-                    numPlayers, args.initialCash, args.numTurns,
-                    args.ops, args.fops, costsgl, costisl)
+        # with open('designs.txt', 'r') as f:
+        #     hardcoded_designs = f.readlines()
+        #     # for l in f:
+        #     #     print l
+        #     #     hardcoded_designs.append(l)
+        # hardcoded_designs = [x.strip() for x in hardcoded_designs]
+        hardcoded_designs = (
+            "1.SmallSat@MEO6,oSGL,oISL 1.SmallSat@MEO5,oSGL,oISL 1.MediumSat@MEO4,VIS,SAR,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.SmallSat@MEO2,oSGL,oISL 2.MediumSat@MEO1,VIS,SAR,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.SmallSat@MEO6,oSGL,pISL 1.SmallSat@MEO5,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.SmallSat@MEO3,oSGL,pISL 2.SmallSat@MEO2,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,DAT,oSGL,oISL 1.MediumSat@MEO4,VIS,SAR,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,DAT,oSGL,oISL 2.MediumSat@MEO1,VIS,SAR,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.SmallSat@MEO6,oSGL,pISL 1.MediumSat@MEO5,DAT,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.SmallSat@MEO3,oSGL,pISL 2.MediumSat@MEO2,DAT,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,VIS,SAR,oSGL,oISL 1.MediumSat@MEO4,VIS,SAR,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,VIS,SAR,oSGL,oISL 2.MediumSat@MEO1,VIS,SAR,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.SmallSat@MEO6,oSGL,pISL 1.MediumSat@MEO5,VIS,SAR,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.SmallSat@MEO3,oSGL,pISL 2.MediumSat@MEO2,VIS,SAR,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.MediumSat@MEO6,VIS,oSGL,pISL 1.MediumSat@MEO5,VIS,DAT,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.MediumSat@MEO3,VIS,oSGL,pISL 2.MediumSat@MEO2,VIS,DAT,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.MediumSat@MEO6,VIS,SAR,oSGL,pISL 1.MediumSat@MEO5,VIS,SAR,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.MediumSat@MEO3,VIS,SAR,oSGL,pISL 2.MediumSat@MEO2,VIS,SAR,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.MediumSat@MEO6,VIS,oSGL,pISL 1.MediumSat@MEO5,VIS,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.MediumSat@MEO3,VIS,oSGL,pISL 2.MediumSat@MEO2,VIS,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+        )
 
-        else:
-            execute(args.dbHost, args.dbPort, None, args.start, args.stop,
-                    [' '.join(args.experiment)],
-                    numPlayers, args.initialCash, args.numTurns,
-                    args.ops, args.fops, 0, 0)
+        for design in hardcoded_designs:
+            for ops, fops in [('d6,a,1', 'x')]:#[('n', 'd6,a,1'), ('d6,a,1', 'n'), ('d6,a,1', 'x')]:
+                if 'x' in fops:
+                    for costsgl in [a for a in range(1600, 2000, 200)]:# if a not in range(0, 1501,100)]:
+                        # print "cost SGL:", costsgl
+                        costisl = costsgl/2.
+                        execute(args.dbHost, args.dbPort, None, args.start, args.stop,
+                            [design],
+                            numPlayers, args.initialCash, args.numTurns,
+                            ops, fops, costsgl, costisl)
+                else:
+                    execute(args.dbHost, args.dbPort, None, args.start, args.stop,
+                            [design],
+                                numPlayers, args.initialCash, args.numTurns,
+                                ops, fops, 0, 0)
+        # else:
+        #     execute(args.dbHost, args.dbPort, None, args.start, args.stop,
+        #             [' '.join(args.experiment)],
+        #             numPlayers, args.initialCash, args.numTurns,
+        #             args.ops, args.fops, 0, 0)

@@ -64,19 +64,32 @@ class Game(object):
         self.numPlayers = numPlayers
         self.initialCash = initialCash
         self.eventTypes = [
-            (8, 'demand', {'type':'SAR1', 'phenomenon':'SAR', 'size':1,
-                           'valueSchedule':ValueSchedule([(1,500),(4,400)], -50)}),
-            (12, 'demand', {'type':'SAR2', 'phenomenon':'SAR', 'size':1,
-                           'valueSchedule':ValueSchedule([(2,450),(5,350)], -100)}),
-            (23, 'demand', {'type':'SAR3', 'phenomenon':'SAR', 'size':1,
-                           'valueSchedule':ValueSchedule([(3,400),(6,300)], -150)}),
-            (8, 'demand', {'type':'VIS1', 'phenomenon':'VIS', 'size':1,
-                           'valueSchedule':ValueSchedule([(1,600),(4,500)], -50)}),
-            (17, 'demand', {'type':'VIS2', 'phenomenon':'VIS', 'size':1,
-                           'valueSchedule':ValueSchedule([(2,500),(5,400)], -100)}),
-            (8, 'demand', {'type':'VIS3', 'phenomenon':'VIS', 'size':1,
-                           'valueSchedule':ValueSchedule([(3,450),(6,350)], -150)}),
-            (0, 'disturb', {'type':'Debris', 'hitChance':1./6, 'maxHits':1})
+            (8, 'demand', {'type': 'SAR1', 'phenomenon': 'SAR', 'size': 1,
+                           'valueSchedule': ValueSchedule([(1, 1000), (4, 500)], -200)}),
+            (12, 'demand', {'type': 'SAR2', 'phenomenon': 'SAR', 'size': 1,
+                            'valueSchedule': ValueSchedule([(1, 1000), (4, 500)], -200)}),
+            (23, 'demand', {'type': 'SAR3', 'phenomenon': 'SAR', 'size': 1,
+                            'valueSchedule': ValueSchedule([(1, 1000), (4, 500)], -200)}),
+            (8, 'demand', {'type': 'VIS1', 'phenomenon': 'VIS', 'size': 1,
+                           'valueSchedule': ValueSchedule([(1, 1000), (4, 500)], -200)}),
+            (17, 'demand', {'type': 'VIS2', 'phenomenon': 'VIS', 'size': 1,
+                            'valueSchedule': ValueSchedule([(1, 1000), (4, 500)], -200)}),
+            (8, 'demand', {'type': 'VIS3', 'phenomenon': 'VIS', 'size': 1,
+                           'valueSchedule': ValueSchedule([(1, 1000), (4, 500)], -200)}),
+            (0, 'disturb', {'type': 'Debris', 'hitChance': 1. / 6, 'maxHits': 1})
+            # (8, 'demand', {'type':'SAR1', 'phenomenon':'SAR', 'size':1,
+            #                'valueSchedule':ValueSchedule([(1,500),(4,400)], -50)}),
+            # (12, 'demand', {'type':'SAR2', 'phenomenon':'SAR', 'size':1,
+            #                'valueSchedule':ValueSchedule([(2,450),(5,350)], -100)}),
+            # (23, 'demand', {'type':'SAR3', 'phenomenon':'SAR', 'size':1,
+            #                'valueSchedule':ValueSchedule([(3,400),(6,300)], -150)}),
+            # (8, 'demand', {'type':'VIS1', 'phenomenon':'VIS', 'size':1,
+            #                'valueSchedule':ValueSchedule([(1,600),(4,500)], -50)}),
+            # (17, 'demand', {'type':'VIS2', 'phenomenon':'VIS', 'size':1,
+            #                'valueSchedule':ValueSchedule([(2,500),(5,400)], -100)}),
+            # (8, 'demand', {'type':'VIS3', 'phenomenon':'VIS', 'size':1,
+            #                'valueSchedule':ValueSchedule([(3,450),(6,350)], -150)}),
+            # (0, 'disturb', {'type':'Debris', 'hitChance':1./6, 'maxHits':1})
         ]
         self.satelliteTypes = [
             {'type':'SmallSat', 'cost':200, 'capacity':2},

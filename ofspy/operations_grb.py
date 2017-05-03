@@ -84,19 +84,19 @@ class DynamicOperations(Operations):
                 for m in e.modules if m.isTransceiver() and m.isISL()]))
             phenomena = ['VIS','SAR',None]
 
-            ''' ********************TEST TEST TEST************************ '''
-            # print "Length of federates:", len(federates)
-            federate1, federate2 = [federate for federation in context.federations for federate in federation.federates]
-
-            ownElements1 = [e for e in elements if e in federate1.elements]
-            ownElements2 = [e for e in elements if e in federate2.elements]
-
-            ownSatellites1 = [e for e in ownElements1 if e.isSpace()]
-            ownSatellites2 = [e for e in ownElements2 if e.isSpace()]
-            ownStations1 = [e for e in ownElements1 if e.isGround()]
-            ownStations2 = [e for e in ownElements2 if e.isGround()]
-
-            ''' ********************FINISH************************ '''
+            # ''' ********************TEST TEST TEST************************ '''
+            # # print "Length of federates:", len(federates)
+            # federate1, federate2 = [federate for federation in context.federations for federate in federation.federates]
+            #
+            # ownElements1 = [e for e in elements if e in federate1.elements]
+            # ownElements2 = [e for e in elements if e in federate2.elements]
+            #
+            # ownSatellites1 = [e for e in ownElements1 if e.isSpace()]
+            # ownSatellites2 = [e for e in ownElements2 if e.isSpace()]
+            # ownStations1 = [e for e in ownElements1 if e.isGround()]
+            # ownStations2 = [e for e in ownElements2 if e.isGround()]
+            #
+            # ''' ********************FINISH************************ '''
 
             for i, satellite in enumerate(satellites):
                 S.insert(i, [])
@@ -412,46 +412,46 @@ class DynamicOperations(Operations):
             lp.setParam('OutputFlag', False)
             lp.optimize()
 
-            ''' ********************TEST TEST TEST************************ '''
-
-            Td_1 = Td_0 = Tc_1 = Tc_0 = Ld_1 = Ld_0 = Lc_1 = Lc_0 = 0
-
-            for t, time in enumerate(range(minTime, maxTime + 1)):
-                for i, satellite in enumerate(satellites):
-                    for j, station in enumerate(stations):
-                        for k, protocol in enumerate(protocolsSGL):
-                            for l, demand in enumerate(demands):
-                                # print T_d[t][i][j][k][l].x
-                                if T_d[t][i][j][k][l].x > 0.5:
-                                    print "Own SGL: ", (satellite in ownSatellites1), (station in ownStations1), (satellite in ownSatellites2), (station in ownStations2)
-                                    Td_1 += 1
-                                else:
-                                    Td_0 += 1
-
-                            for l, contract in enumerate(contracts):
-                                # print T_c[t][i][j][k][l].x
-                                if T_c[t][i][j][k][l].x > 0:
-                                    Tc_1 += 1
-                                else:
-                                    Tc_0 += 1
-                for i, txSatellite in enumerate(satellitesISL):
-                    for j, rxSatellite in enumerate(satellitesISL):
-                        for k, protocol in enumerate(protocolsISL):
-                            for l, demand in enumerate(demands):
-                                if L_d[t][i][j][k][l].x > 0:
-                                    print "Own ISL: ", (txSatellite in ownSatellites1), (rxSatellite in ownStations1), (txSatellite in ownSatellites2), (rxSatellite in ownStations2)
-                                    Ld_1 += 1
-                                else:
-                                    Ld_0 += 1
-
-                            for l, contract in enumerate(contracts):
-                                if L_c[t][i][j][k][l].x > 0:
-                                    Lc_1 += 1
-                                else:
-                                    Lc_0 += 1
-
-            print Td_0, Td_1, Tc_0, Tc_1, Ld_0, Ld_1, Lc_0, Lc_1
-            ''' ********************FINISH************************ '''
+            # ''' ********************TEST TEST TEST************************ '''
+            #
+            # Td_1 = Td_0 = Tc_1 = Tc_0 = Ld_1 = Ld_0 = Lc_1 = Lc_0 = 0
+            #
+            # for t, time in enumerate(range(minTime, maxTime + 1)):
+            #     for i, satellite in enumerate(satellites):
+            #         for j, station in enumerate(stations):
+            #             for k, protocol in enumerate(protocolsSGL):
+            #                 for l, demand in enumerate(demands):
+            #                     # print T_d[t][i][j][k][l].x
+            #                     if T_d[t][i][j][k][l].x > 0.5:
+            #                         print "Own SGL: ", (satellite in ownSatellites1), (station in ownStations1), (satellite in ownSatellites2), (station in ownStations2)
+            #                         Td_1 += 1
+            #                     else:
+            #                         Td_0 += 1
+            #
+            #                 for l, contract in enumerate(contracts):
+            #                     # print T_c[t][i][j][k][l].x
+            #                     if T_c[t][i][j][k][l].x > 0:
+            #                         Tc_1 += 1
+            #                     else:
+            #                         Tc_0 += 1
+            #     for i, txSatellite in enumerate(satellitesISL):
+            #         for j, rxSatellite in enumerate(satellitesISL):
+            #             for k, protocol in enumerate(protocolsISL):
+            #                 for l, demand in enumerate(demands):
+            #                     if L_d[t][i][j][k][l].x > 0:
+            #                         print "Own ISL: ", (txSatellite in ownSatellites1), (rxSatellite in ownStations1), (txSatellite in ownSatellites2), (rxSatellite in ownStations2)
+            #                         Ld_1 += 1
+            #                     else:
+            #                         Ld_0 += 1
+            #
+            #                 for l, contract in enumerate(contracts):
+            #                     if L_c[t][i][j][k][l].x > 0:
+            #                         Lc_1 += 1
+            #                     else:
+            #                         Lc_0 += 1
+            #
+            # print Td_0, Td_1, Tc_0, Tc_1, Ld_0, Ld_1, Lc_0, Lc_1
+            # ''' ********************FINISH************************ '''
             
             def _transportContract(operations, satellite, contract, context):
                 i = satellites.index(satellite)
@@ -516,7 +516,7 @@ class DynamicOperations(Operations):
                                                      demand, context)
             
             # first, transport contracts to resolution
-            print "Before Cash:", federate1.cash, federate2.cash
+            # print "Before Cash:", federate1.cash, federate2.cash
             for j, contract in enumerate(contracts):
                 if any(R_c[0][i][j].x > 0 for i, element in enumerate(elements)):
                     logging.debug('Transporting contract {} for resolution...'
@@ -565,7 +565,7 @@ class DynamicOperations(Operations):
                     satellite = context.getDataElement(contract)
                     # print "contract storage"
                     _transportContract(self, satellite, contract, context)
-            print "After Cash:", federate1.cash, federate2.cash
+            # print "After Cash:", federate1.cash, federate2.cash
         except GurobiError as e:
             print('Error code ' + str(e.errno) + ": " + str(e))
         except AttributeError:
@@ -1020,46 +1020,46 @@ class FixedCostDynamicOperations(DynamicOperations):
                 # print R_d
                 lp.optimize()
 
-                ''' ********************TEST TEST TEST************************ '''
-
-                Td_1 = Td_0 = Tc_1 = Tc_0 = Ld_1 = Ld_0 = Lc_1 = Lc_0 = 0
-
-                for t, time in enumerate(range(minTime, maxTime + 1)):
-                    for i, satellite in enumerate(allSatellites):
-                        for j, station in enumerate(allStations):
-                            for k, protocol in enumerate(protocolsSGL):
-                                for l, demand in enumerate(demands):
-                                    # print T_d[t][i][j][k][l].x
-                                    if T_d[t][i][j][k][l].x > 0.5:
-                                        print "Own SGL: ", (satellite in ownSatellites), (station in ownStations)
-                                        Td_1 += 1
-                                    else:
-                                        Td_0 += 1
-
-                                for l, contract in enumerate(ownContracts):
-                                    # print T_c[t][i][j][k][l].x
-                                    if T_c[t][i][j][k][l].x > 0:
-                                        Tc_1 += 1
-                                    else:
-                                        Tc_0 += 1
-                    for i, txSatellite in enumerate(allSatellitesISL):
-                        for j, rxSatellite in enumerate(allSatellitesISL):
-                            for k, protocol in enumerate(protocolsISL):
-                                for l, demand in enumerate(demands):
-                                    if L_d[t][i][j][k][l].x > 0:
-                                        print "Own ISL: ", (txSatellite in ownSatellites), (rxSatellite in ownSatellites)
-                                        Ld_1 += 1
-                                    else:
-                                        Ld_0 += 1
-
-                                for l, contract in enumerate(ownContracts):
-                                    if L_c[t][i][j][k][l].x > 0:
-                                        Lc_1 += 1
-                                    else:
-                                        Lc_0 += 1
-
-                print Td_0, Td_1, Tc_0, Tc_1, Ld_0, Ld_1, Lc_0, Lc_1
-                ''' ********************FINISH************************ '''
+                # ''' ********************TEST TEST TEST************************ '''
+                #
+                # Td_1 = Td_0 = Tc_1 = Tc_0 = Ld_1 = Ld_0 = Lc_1 = Lc_0 = 0
+                #
+                # for t, time in enumerate(range(minTime, maxTime + 1)):
+                #     for i, satellite in enumerate(allSatellites):
+                #         for j, station in enumerate(allStations):
+                #             for k, protocol in enumerate(protocolsSGL):
+                #                 for l, demand in enumerate(demands):
+                #                     # print T_d[t][i][j][k][l].x
+                #                     if T_d[t][i][j][k][l].x > 0.5:
+                #                         print "Own SGL: ", (satellite in ownSatellites), (station in ownStations)
+                #                         Td_1 += 1
+                #                     else:
+                #                         Td_0 += 1
+                #
+                #                 for l, contract in enumerate(ownContracts):
+                #                     # print T_c[t][i][j][k][l].x
+                #                     if T_c[t][i][j][k][l].x > 0:
+                #                         Tc_1 += 1
+                #                     else:
+                #                         Tc_0 += 1
+                #     for i, txSatellite in enumerate(allSatellitesISL):
+                #         for j, rxSatellite in enumerate(allSatellitesISL):
+                #             for k, protocol in enumerate(protocolsISL):
+                #                 for l, demand in enumerate(demands):
+                #                     if L_d[t][i][j][k][l].x > 0:
+                #                         print "Own ISL: ", (txSatellite in ownSatellites), (rxSatellite in ownSatellites)
+                #                         Ld_1 += 1
+                #                     else:
+                #                         Ld_0 += 1
+                #
+                #                 for l, contract in enumerate(ownContracts):
+                #                     if L_c[t][i][j][k][l].x > 0:
+                #                         Lc_1 += 1
+                #                     else:
+                #                         Lc_0 += 1
+                #
+                # print Td_0, Td_1, Tc_0, Tc_1, Ld_0, Ld_1, Lc_0, Lc_1
+                # ''' ********************FINISH************************ '''
 
 
                                                                 # for v in lp.getVars():
@@ -1087,7 +1087,7 @@ class FixedCostDynamicOperations(DynamicOperations):
                                                              station, context)
                                         controller.resolve(contract, context)
                                         if station not in ownStations:
-                                            print "transport contract: from sattelite to other's station"
+                                            # print "transport contract: from sattelite to other's station"
                                             supplier = context.getElementOwner(station)
                                             controller.exchange(operations.costSGL,
                                                                 federate, supplier)
@@ -1104,7 +1104,7 @@ class FixedCostDynamicOperations(DynamicOperations):
                                         _transportContract(operations, rxSatellite,
                                                            contract, context)
                                         if rxSatellite not in ownSatellites:
-                                            print "transport contract: from sattelite to other's sattelite"
+                                            # print "transport contract: from sattelite to other's sattelite"
                                             supplier = context.getElementOwner(rxSatellite)
                                             controller.exchange(operations.costISL, federate, supplier)
                                             logging.debug('{} paid {} to {} for ISL'.format(
@@ -1132,7 +1132,7 @@ class FixedCostDynamicOperations(DynamicOperations):
                                                              station, context)
                                         controller.resolve(contract, context)
                                         if station not in ownStations:
-                                            print "transport demand: from sattelite to other's station"
+                                            # print "transport demand: from sattelite to other's station"
                                             supplier = context.getElementOwner(station)
                                             controller.exchange(operations.costSGL,
                                                                 federate, supplier)
@@ -1148,7 +1148,7 @@ class FixedCostDynamicOperations(DynamicOperations):
                                         _transportDemand(operations, rxSatellite,
                                                          demand, context)
                                         if rxSatellite not in ownSatellites:
-                                            print "transport demand: from sattelite to other's sattelite"
+                                            # print "transport demand: from sattelite to other's sattelite"
                                             supplier = context.getElementOwner(rxSatellite)
                                             controller.exchange(operations.costISL,
                                                                 federate, supplier)
@@ -1156,7 +1156,7 @@ class FixedCostDynamicOperations(DynamicOperations):
                                                 federate.name, operations.costISL, supplier.name))
 
 
-                print "Before cash:", federate.cash
+                # print "Before cash:", federate.cash
                 # first, transport contracts to resolution
                 for j, contract in enumerate(ownContracts):
                     if any(R_c[0][i][j].x > 0 for i, element in enumerate(allElements)):
@@ -1197,7 +1197,7 @@ class FixedCostDynamicOperations(DynamicOperations):
                         satellite = context.getDataElement(contract)
                         _transportContract(self, satellite, contract, context)
 
-                print "After cash: ", federate.cash
+                # print "After cash: ", federate.cash
 
             except GurobiError as e:
                 print('Error code ' + str(e.errno) + ": " + str(e))
