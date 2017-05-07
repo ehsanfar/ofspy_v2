@@ -509,8 +509,12 @@ def execute(dbHost, dbPort, dbName, start, stop, cases, numPlayers,
     numComplete = 0.0
     logging.info('Executing {} cases with seeds from {} to {} for {} total executions.'
                  .format(len(cases), start, stop, len(executions)))
-    for results in futures.map(queryCase, executions):
-        print results
+    # for results in futures.map(queryCase, executions):
+    results = futures.map(queryCase, executions)
+    # print "results :", results
+    N = len(results[0])
+    # This line calculates the average of each element of each tuple for all the lists in the results, in other words assuming that each tuple of each results shows one seed of the same identity
+    print [[sum(x)/float(N) for x in zip(*l)] for l in [[l[j] for l in results] for j in range(N)]]
 
 
 def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
@@ -701,15 +705,34 @@ if __name__ == '__main__':
             "1.MediumSat@MEO6,VIS,oSGL,oISL 1.MediumSat@MEO5,VIS,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,oSGL,oISL 2.MediumSat@MEO2,VIS,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
             "1.MediumSat@MEO6,VIS,oSGL,oISL 1.MediumSat@MEO5,VIS,DAT,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,oSGL,oISL 2.MediumSat@MEO2,VIS,DAT,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
             "1.MediumSat@MEO6,VIS,SAR,oSGL,oISL 1.MediumSat@MEO5,VIS,SAR,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,SAR,oSGL,oISL 2.MediumSat@MEO2,VIS,SAR,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+
+            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.SmallSat@MEO%d,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,DAT,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,DAT,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,DAT,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,DAT,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.MediumSat@MEO%d,VIS,oSGL,oISL 1.MediumSat@MEO%d,VIS,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,oSGL,oISL 2.MediumSat@MEO%d,VIS,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,oSGL,oISL 3.MediumSat@MEO%d,VIS,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.MediumSat@MEO%d,VIS,oSGL,oISL 1.MediumSat@MEO%d,VIS,DAT,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,oSGL,oISL 2.MediumSat@MEO%d,VIS,DAT,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,oSGL,oISL 3.MediumSat@MEO%d,VIS,DAT,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
         )
 
         for design in hardcoded_designs:
-            for ops, fops in [('d6,a,1', 'x')]:#[('n', 'd6,a,1'), ('d6,a,1', 'n'), ('d6,a,1', 'x')]:
+            print design
+            if '4.' in design:
+                numPlayers = 4
+            elif '3.' in design:
+                numPlayers = 3
+            else:
+                numPlayers = 2
+
+            for ops, fops in [('n', 'd6,a,1'), ('d6,a,1', 'n'), ('d6,a,1', 'x')]:#[('d6,a,1', 'x')]:#
                 if 'x' in fops:
-                    for costsgl in [a for a in range(0, 2201, 200)]:# if a not in range(0, 1501,100)]:
+                    for costsgl in [a for a in range(0, 2401, 200)]:# if a not in range(0, 1501,100)]:
                         # print "cost SGL:", costsgl
                         costisl = costsgl / 2.
                         fops = "x%d,%d,6,a,1"%(costsgl,costisl)
+                        print "fops:", fops
                         execute(args.dbHost, args.dbPort, None, args.start, args.stop,
                             [design],
                             numPlayers, args.initialCash, args.numTurns,

@@ -591,7 +591,7 @@ class FixedCostDynamicOperations(DynamicOperations):
             planningHorizon, storagePenalty, islPenalty)
         self.costSGL = costSGL
         self.costISL = costISL
-        print "This is FixedCostDynamicOperations", self.costISL, self.costSGL
+        # print "This is FixedCostDynamicOperations", self.costISL, self.costSGL
 
     def execute(self, controller, context):
         """

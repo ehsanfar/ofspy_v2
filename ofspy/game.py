@@ -334,7 +334,7 @@ class Game(object):
         # parse federation operations strategy
 
         foperations = None
-        print "fops:", fops
+        # print "fops:", fops
         if re.match('d', fops):
             # parse centralized operations strategy
             planningHorizon = 6
@@ -367,9 +367,9 @@ class Game(object):
             islPenalty = -10
             costSGL = 50
             costISL = 20
-            print "game.py: fops is:", fops
+            # print "game.py: fops is:", fops
             if re.match('x\d+,\d+,\d+,(?:a|\d+),\d+',fops) is not None:
-                print "xG,I,H,s,i"
+                # print "xG,I,H,s,i"
                 # case xG,I,H,s,i:  SGL fixed cost G,
                 #                   ISL fixed cost I,
                 #                   planning horizon H,
@@ -386,7 +386,7 @@ class Game(object):
                     storagePenalty = -1*int(args[3])
                 islPenalty = -1*int(args[4])
             elif re.match('x\d+,(?:a|\d+),\d+', fops):
-                print "xH,s,i"
+                # print "xH,s,i"
                 # case xH,s,i:  planning horizon H,
                 #               storage opportunity cost s,
                 #               isl opportunity cost i
@@ -399,7 +399,7 @@ class Game(object):
                     storagePenalty = -1*int(args[1])
                 islPenalty = -1*int(args[2])
             elif re.match('x\d+,\d+,\d+', fops):
-                print "xG,I,H"
+                # print "xG,I,H"
                 # case xG,I,H:  SGL fixed cost G,
                 #               ISL fixed cost I,
                 #               planning horizon H
