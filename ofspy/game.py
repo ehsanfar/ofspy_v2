@@ -257,7 +257,7 @@ class Game(object):
                 else None)
         return None
     
-    def generateContext(self, seed=0, ops='', fops='', costsgl = 50, costisl = 20):
+    def generateContext(self, seed=0, ops='', fops=''):
         """
         Generates the context for this game.
         @param seed: the seed
@@ -365,9 +365,11 @@ class Game(object):
             planningHorizon = 6
             storagePenalty = -100
             islPenalty = -10
-            costSGL = costsgl
-            costISL = costisl
+            costSGL = 50
+            costISL = 20
+            print "game.py: fops is:", fops
             if re.match('x\d+,\d+,\d+,(?:a|\d+),\d+',fops) is not None:
+                print "xG,I,H,s,i"
                 # case xG,I,H,s,i:  SGL fixed cost G,
                 #                   ISL fixed cost I,
                 #                   planning horizon H,
@@ -384,6 +386,7 @@ class Game(object):
                     storagePenalty = -1*int(args[3])
                 islPenalty = -1*int(args[4])
             elif re.match('x\d+,(?:a|\d+),\d+', fops):
+                print "xH,s,i"
                 # case xH,s,i:  planning horizon H,
                 #               storage opportunity cost s,
                 #               isl opportunity cost i
@@ -396,6 +399,7 @@ class Game(object):
                     storagePenalty = -1*int(args[1])
                 islPenalty = -1*int(args[2])
             elif re.match('x\d+,\d+,\d+', fops):
+                print "xG,I,H"
                 # case xG,I,H:  SGL fixed cost G,
                 #               ISL fixed cost I,
                 #               planning horizon H

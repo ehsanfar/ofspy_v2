@@ -20,6 +20,7 @@ import logging
 import pymongo
 from scoop import futures
 import sys, os
+import re
 
 # add ofspy to system path
 sys.path.append(os.path.abspath('..'))
@@ -473,7 +474,7 @@ def executeBVC3(dbHost, dbPort, start, stop):
 
 
 def execute(dbHost, dbPort, dbName, start, stop, cases, numPlayers,
-            initialCash, numTurns, ops, fops, costsgl, costisl):
+            initialCash, numTurns, ops, fops):
     """
     Executes a general experiment.
     @param dbHost: the database host
@@ -503,7 +504,7 @@ def execute(dbHost, dbPort, dbName, start, stop, cases, numPlayers,
     # print start, stop
     executions = [(dbHost, dbPort, dbName,
                    [e for e in elements.split(' ') if e != ''],
-                   numPlayers, initialCash, numTurns, seed, ops, fops, costsgl, costisl)
+                   numPlayers, initialCash, numTurns, seed, ops, fops)
                   for (seed, elements) in itertools.product(range(start, stop), cases)]
     numComplete = 0.0
     logging.info('Executing {} cases with seeds from {} to {} for {} total executions.'
@@ -513,7 +514,7 @@ def execute(dbHost, dbPort, dbName, start, stop, cases, numPlayers,
 
 
 def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
-              initialCash, numTurns, seed, ops, fops, costsgl, costisl)):
+              initialCash, numTurns, seed, ops, fops)):
     """
     Queries and retrieves existing results or executes an OFS simulation.
     @param dbHost: the database host
@@ -543,10 +544,19 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
     dbHost = socket.gethostbyname(socket.gethostname())
     # print dbHost, dbPort, dbName, db
 
+    if re.match('x\d+,\d+,.', fops) is not None:
+        args = re.search('x(\d+),(\d+),.',
+                         fops)
+        costSGL = int(args.group(1))
+        costISL = int(args.group(2))
+    else:
+        costSGL = 0
+        costISL = 0
+
     if db is None and dbHost is None:
         # print "db is None adn dbHOst is None"
         return executeCase((elements, numPlayers, initialCash,
-                            numTurns, seed, ops, fops, costsgl, costisl))
+                            numTurns, seed, ops, fops))
     elif db is None and dbHost is not None:
         # print "read from database"
         db = pymongo.MongoClient(dbHost, dbPort).ofs
@@ -558,8 +568,8 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
              u'seed': seed,
              u'ops': ops,
              u'fops': fops,
-             u'costSGL': costsgl,
-             u'costISL': costisl
+             u'costSGL': costSGL,
+             u'costISL': costISL
              }
 
     doc = None
@@ -570,7 +580,7 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
         doc = db.results.find_one(query)
         if doc is None:
             results = executeCase((elements, numPlayers, initialCash,
-                                   numTurns, seed, ops, fops, costsgl, costisl))
+                                   numTurns, seed, ops, fops))
             doc = {u'elements': ' '.join(elements),
                    u'numPlayers': numPlayers,
                    u'initialCash': initialCash,
@@ -578,8 +588,8 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
                    u'seed': seed,
                    u'ops': ops,
                    u'fops': fops,
-                   u'costSGL': costsgl,
-                   u'costISL': costisl,
+                   u'costSGL': costSGL,
+                   u'costISL': costISL,
                    u'results': results}
             db.results.insert_one(doc)
 
@@ -589,7 +599,7 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
     return [tuple(result) for result in doc[u'results']]
 
 
-def executeCase((elements, numPlayers, initialCash, numTurns, seed, ops, fops, costsgl, costisl)):
+def executeCase((elements, numPlayers, initialCash, numTurns, seed, ops, fops)):
     """
     Executes an OFS simulation.
     @param elements: the design specifications
@@ -608,7 +618,7 @@ def executeCase((elements, numPlayers, initialCash, numTurns, seed, ops, fops, c
     @type fops: L{str}
     """
     return OFS(elements=elements, numPlayers=numPlayers, initialCash=initialCash,
-               numTurns=numTurns, seed=seed, ops=ops, fops=fops, costsgl=costsgl, costisl=costisl).execute()
+               numTurns=numTurns, seed=seed, ops=ops, fops=fops).execute()
 
 
 if __name__ == '__main__':
@@ -631,7 +641,7 @@ if __name__ == '__main__':
                         help='logging level')
     parser.add_argument('-s', '--start', type=int, default=0,
                         help='starting random number seed')
-    parser.add_argument('-t', '--stop', type=int, default=10,
+    parser.add_argument('-t', '--stop', type=int, default=30,
                         help='stopping random number seed')
     parser.add_argument('--dbHost', type=str, default=None,
                         help='database host')
@@ -683,31 +693,32 @@ if __name__ == '__main__':
         # hardcoded_designs = [x.strip() for x in hardcoded_designs]
         hardcoded_designs = (
             "1.SmallSat@MEO6,oSGL,oISL 1.SmallSat@MEO5,oSGL,oISL 1.MediumSat@MEO4,VIS,SAR,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.SmallSat@MEO2,oSGL,oISL 2.MediumSat@MEO1,VIS,SAR,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.SmallSat@MEO6,oSGL,pISL 1.SmallSat@MEO5,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.SmallSat@MEO3,oSGL,pISL 2.SmallSat@MEO2,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.SmallSat@MEO6,oSGL,oISL 1.SmallSat@MEO5,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.SmallSat@MEO2,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
             "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,DAT,oSGL,oISL 1.MediumSat@MEO4,VIS,SAR,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,DAT,oSGL,oISL 2.MediumSat@MEO1,VIS,SAR,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.SmallSat@MEO6,oSGL,pISL 1.MediumSat@MEO5,DAT,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.SmallSat@MEO3,oSGL,pISL 2.MediumSat@MEO2,DAT,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,DAT,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,DAT,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
             "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,VIS,SAR,oSGL,oISL 1.MediumSat@MEO4,VIS,SAR,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,VIS,SAR,oSGL,oISL 2.MediumSat@MEO1,VIS,SAR,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.SmallSat@MEO6,oSGL,pISL 1.MediumSat@MEO5,VIS,SAR,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.SmallSat@MEO3,oSGL,pISL 2.MediumSat@MEO2,VIS,SAR,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.MediumSat@MEO6,VIS,oSGL,pISL 1.MediumSat@MEO5,VIS,DAT,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.MediumSat@MEO3,VIS,oSGL,pISL 2.MediumSat@MEO2,VIS,DAT,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.MediumSat@MEO6,VIS,SAR,oSGL,pISL 1.MediumSat@MEO5,VIS,SAR,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.MediumSat@MEO3,VIS,SAR,oSGL,pISL 2.MediumSat@MEO2,VIS,SAR,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.MediumSat@MEO6,VIS,oSGL,pISL 1.MediumSat@MEO5,VIS,oSGL,pISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,pISL 2.MediumSat@MEO3,VIS,oSGL,pISL 2.MediumSat@MEO2,VIS,oSGL,pISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,pISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,VIS,SAR,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,VIS,SAR,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.MediumSat@MEO6,VIS,oSGL,oISL 1.MediumSat@MEO5,VIS,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,oSGL,oISL 2.MediumSat@MEO2,VIS,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.MediumSat@MEO6,VIS,oSGL,oISL 1.MediumSat@MEO5,VIS,DAT,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,oSGL,oISL 2.MediumSat@MEO2,VIS,DAT,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            "1.MediumSat@MEO6,VIS,SAR,oSGL,oISL 1.MediumSat@MEO5,VIS,SAR,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,SAR,oSGL,oISL 2.MediumSat@MEO2,VIS,SAR,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
         )
 
         for design in hardcoded_designs:
             for ops, fops in [('d6,a,1', 'x')]:#[('n', 'd6,a,1'), ('d6,a,1', 'n'), ('d6,a,1', 'x')]:
                 if 'x' in fops:
-                    for costsgl in [a for a in range(1600, 2000, 200)]:# if a not in range(0, 1501,100)]:
+                    for costsgl in [a for a in range(0, 2201, 200)]:# if a not in range(0, 1501,100)]:
                         # print "cost SGL:", costsgl
-                        costisl = costsgl/2.
+                        costisl = costsgl / 2.
+                        fops = "x%d,%d,6,a,1"%(costsgl,costisl)
                         execute(args.dbHost, args.dbPort, None, args.start, args.stop,
                             [design],
                             numPlayers, args.initialCash, args.numTurns,
-                            ops, fops, costsgl, costisl)
+                            ops, fops)
                 else:
                     execute(args.dbHost, args.dbPort, None, args.start, args.stop,
                             [design],
                                 numPlayers, args.initialCash, args.numTurns,
-                                ops, fops, 0, 0)
+                                ops, fops)
         # else:
         #     execute(args.dbHost, args.dbPort, None, args.start, args.stop,
         #             [' '.join(args.experiment)],

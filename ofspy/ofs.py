@@ -21,7 +21,7 @@ from .simulator import Simulator
 
 class OFS(object):
     def __init__(self, elements, numPlayers, initialCash,
-                 numTurns, seed, ops, fops, costsgl = 50, costisl = 20):
+                 numTurns, seed, ops, fops):
 
         # print elements, numPlayers, initialCash, numTurns, seed, ops, fops
         """
@@ -44,7 +44,7 @@ class OFS(object):
         self.game = Game(numPlayers=numPlayers,
                          initialCash=initialCash)
         self.context = self.game.generateContext(
-            seed=seed, ops=ops, fops=fops, costsgl=costsgl, costisl=costisl)
+            seed=seed, ops=ops, fops=fops)
         self.sim = Simulator(entities=[self.context],
                              initTime=0,  timeStep=1,
                              maxTime=numTurns)
