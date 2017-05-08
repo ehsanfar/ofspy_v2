@@ -728,7 +728,7 @@ if __name__ == '__main__':
 
             for ops, fops in [('n', 'd6,a,1'), ('d6,a,1', 'n'), ('d6,a,1', 'x')]:#[('d6,a,1', 'x')]:#
                 if 'x' in fops:
-                    for costsgl in [a for a in range(0, 2401, 200)]:# if a not in range(0, 1501,100)]:
+                    for costsgl in [a for a in range(2600, 3001, 200)]:# if a not in range(0, 1501,100)]:
                         # print "cost SGL:", costsgl
                         costisl = costsgl / 2.
                         fops = "x%d,%d,6,a,1"%(costsgl,costisl)

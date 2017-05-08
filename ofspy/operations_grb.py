@@ -1020,46 +1020,49 @@ class FixedCostDynamicOperations(DynamicOperations):
                 # print R_d
                 lp.optimize()
 
-                # ''' ********************TEST TEST TEST************************ '''
-                #
-                # Td_1 = Td_0 = Tc_1 = Tc_0 = Ld_1 = Ld_0 = Lc_1 = Lc_0 = 0
-                #
-                # for t, time in enumerate(range(minTime, maxTime + 1)):
-                #     for i, satellite in enumerate(allSatellites):
-                #         for j, station in enumerate(allStations):
-                #             for k, protocol in enumerate(protocolsSGL):
-                #                 for l, demand in enumerate(demands):
-                #                     # print T_d[t][i][j][k][l].x
-                #                     if T_d[t][i][j][k][l].x > 0.5:
-                #                         print "Own SGL: ", (satellite in ownSatellites), (station in ownStations)
-                #                         Td_1 += 1
-                #                     else:
-                #                         Td_0 += 1
-                #
-                #                 for l, contract in enumerate(ownContracts):
-                #                     # print T_c[t][i][j][k][l].x
-                #                     if T_c[t][i][j][k][l].x > 0:
-                #                         Tc_1 += 1
-                #                     else:
-                #                         Tc_0 += 1
-                #     for i, txSatellite in enumerate(allSatellitesISL):
-                #         for j, rxSatellite in enumerate(allSatellitesISL):
-                #             for k, protocol in enumerate(protocolsISL):
-                #                 for l, demand in enumerate(demands):
-                #                     if L_d[t][i][j][k][l].x > 0:
-                #                         print "Own ISL: ", (txSatellite in ownSatellites), (rxSatellite in ownSatellites)
-                #                         Ld_1 += 1
-                #                     else:
-                #                         Ld_0 += 1
-                #
-                #                 for l, contract in enumerate(ownContracts):
-                #                     if L_c[t][i][j][k][l].x > 0:
-                #                         Lc_1 += 1
-                #                     else:
-                #                         Lc_0 += 1
-                #
+                ''' ********************TEST TEST TEST************************ '''
+
+                Td_1 = Td_0 = Tc_1 = Tc_0 = Ld_1 = Ld_0 = Lc_1 = Lc_0 = 0
+
+                for t, time in enumerate(range(minTime, maxTime + 1)):
+                    for i, satellite in enumerate(allSatellites):
+                        for j, station in enumerate(allStations):
+                            for k, protocol in enumerate(protocolsSGL):
+                                for l, demand in enumerate(demands):
+                                    # print T_d[t][i][j][k][l].x
+                                    if T_d[t][i][j][k][l].x > 0.5:
+                                        if (satellite in ownSatellites) != (station in ownStations):
+                                            print "(%d,%d,%d,%s,%d): ISL"%(t,i,j,protocol,l),
+                                        Td_1 += 1
+                                    else:
+                                        Td_0 += 1
+
+                                for l, contract in enumerate(ownContracts):
+                                    # print T_c[t][i][j][k][l].x
+                                    if T_c[t][i][j][k][l].x > 0:
+                                        Tc_1 += 1
+                                    else:
+                                        Tc_0 += 1
+
+                    for i, txSatellite in enumerate(allSatellitesISL):
+                        for j, rxSatellite in enumerate(allSatellitesISL):
+                            for k, protocol in enumerate(protocolsISL):
+                                for l, demand in enumerate(demands):
+                                    if L_d[t][i][j][k][l].x > 0:
+                                        if (txSatellite in ownSatellites) != (rxSatellite in ownSatellites):
+                                            print "(%d,%d,%d,%s,%d): ISL"%(t,i,j,protocol,l),
+                                        Ld_1 += 1
+                                    else:
+                                        Ld_0 += 1
+
+                                for l, contract in enumerate(ownContracts):
+                                    if L_c[t][i][j][k][l].x > 0:
+                                        Lc_1 += 1
+                                    else:
+                                        Lc_0 += 1
+                print ''
                 # print Td_0, Td_1, Tc_0, Tc_1, Ld_0, Ld_1, Lc_0, Lc_1
-                # ''' ********************FINISH************************ '''
+                ''' ********************FINISH************************ '''
 
 
                                                                 # for v in lp.getVars():
