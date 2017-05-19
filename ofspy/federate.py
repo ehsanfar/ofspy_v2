@@ -17,11 +17,13 @@ limitations under the License.
 """
 Federate class.
 """
-
+import numpy as np
+import re
 import logging
 
 from .controller import Controller
 from .operations import Operations
+from .algorithms import list2dict
 
 class Federate(Controller):
     def __init__(self, name=None, initialCash=0, elements=None,
@@ -52,7 +54,15 @@ class Federate(Controller):
             self._initContracts = contracts[:]
         self.contracts = self._initContracts
         self.operations = operations
-    
+        self.costDic = {}
+        # self.contractSignals = {}
+        # self.demandSignals = {}
+        self.thirdContract = {}
+        self.receivedDemand = {}
+        self.issuedDemand = {}
+        self.costHistory = {}
+        self.name = name
+
     def getElements(self):
         """
         Gets the elements controlled by this controller.
@@ -183,3 +193,97 @@ class Federate(Controller):
             contract.tock()
 
         # print "Tock cash: ", self.cash
+
+    def setCost(self, protocol, cost):
+        self.costDic[protocol] = cost
+
+    def getCost(self, protocol, federate=None):
+
+        key = '{}-{}'.format(federate, protocol)
+        return self.costDic[protocol] if key not in self.costDic else self.costDic[key]
+        # name_dic = {'P1': 300, 'P2': 600, 'P3': 900}
+        # c = 200*np.round(10*np.random.normal()) +
+
+        # mutual_cost = []
+        # for k, v in self.receivedDemand.items():
+        #     if protocol not in k or federate not in k:
+        #         continue
+        #
+        #     g = re.search(r'.+_(\w+)_(\d+)', k).groups()
+        #     cost = int(g[1])
+        #     mutual_cost.append()
+
+        # if protocol not in self.costHistory:
+        #     self.costHistory[protocol] = []
+        #
+        # self.costHistory[protocol].append(c)
+        # return name_dic[self.name]
+        # return
+
+    # def addContractSignal(self, issuer, protocol, cost):
+    #     """
+    #     :param cType: contract type
+    #     :param issuer: the issuer of the contract
+    #     """
+    #     k = '{0}_{1}_{2}'.format(issuer, protocol, cost)
+    #     self.contractSignals[k] = self.contractSignals[k]+1 if k in self.contractSignals else 1
+    #
+    # def addDemandSignal(self, issuer, protocol, cost):
+    #     """
+    #     :param cType: contract type
+    #     :param issuer: the issuer of the contract
+    #     """
+    #     k = '{0}_{1}_{2}'.format(issuer, protocol, cost)
+    #     self.demandSignals[k] = self.demandSignals[k]+1 if k in self.demandSignals else 1
+
+
+    def addThirdContract(self, sender, protocol, cost):
+        """
+        :param cType: contract type
+        :param issuer: the issuer of the contract
+        """
+        k = '{0}_{1}_{2}'.format(sender, protocol, cost)
+        self.thirdContract[k] = self.thirdContract[k]+1 if k in self.thirdContract else 1
+
+    def addThirdDemand(self, sender, protocol, cost):
+        """
+        :param cType: contract type
+        :param issuer: the issuer of the contract
+        """
+        k = '{0}_{1}_{2}'.format(sender, protocol, cost)
+        self.receivedDemand[k] = self.receivedDemand[k] + 1 if k in self.receivedDemand else 1
+
+    # def updateCost(self):
+    def addIssueDemand(self, receiver, protocol, cost):
+        k = '{0}_{1}_{2}'.format(receiver, protocol, cost)
+        self.issuedDemand[k] = self.issuedDemand[k] + 1 if k in self.issuedDemand else 1
+
+
+    def getthirdcontractsdemands(self):
+        return (self.thirdContract, self.receivedDemand)
+
+    def getCostRewards(self):
+        woncontracts = {}
+        # print self.receivedDemand
+        for k, v in self.receivedDemand.items():
+            g = re.search(r'.+_(\w+)_(\d+)', k).groups()
+            protocol = g[0]
+            cost = int(g[1])
+            if protocol in woncontracts:
+                for i in range(v):
+                    woncontracts[protocol].append(cost)
+            else:
+                woncontracts[protocol] = []
+
+        for k in woncontracts:
+            woncontracts[k] = list2dict(woncontracts[k])
+        #     print k
+        #     print "The won count:", list2dict(woncontracts[k])
+        #     print "Offer Count:", list2dict(self.costHistory[k])
+
+        # costrewards = {}
+        return woncontracts
+
+
+
+

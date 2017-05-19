@@ -29,6 +29,7 @@ db = None  # lazy-load if required
 
 from ofspy.ofs import OFS
 import socket
+import json
 
 
 def enumStations(player, sector, sgl):
@@ -547,15 +548,20 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
     global db
     dbHost = socket.gethostbyname(socket.gethostname())
     # print dbHost, dbPort, dbName, db
-
+    print "fops:", fops
     if re.match('x\d+,\d+,.', fops) is not None:
         args = re.search('x(\d+),(\d+),.',
                          fops)
         costSGL = int(args.group(1))
         costISL = int(args.group(2))
+    elif 'xv,v' in fops:
+        costSGL = 'v'
+        costISL = 'v'
     else:
         costSGL = 0
         costISL = 0
+
+    # print costISL, costSGL
 
     if db is None and dbHost is None:
         # print "db is None adn dbHOst is None"
@@ -573,7 +579,7 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
              u'ops': ops,
              u'fops': fops,
              u'costSGL': costSGL,
-             u'costISL': costISL
+             u'costISL': costISL,
              }
 
     doc = None
@@ -583,8 +589,9 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
         # db.results.remove({}) #this is temporary, should be removed afterwards
         doc = db.results.find_one(query)
         if doc is None:
-            results = executeCase((elements, numPlayers, initialCash,
+            results, demands = executeCase((elements, numPlayers, initialCash,
                                    numTurns, seed, ops, fops))
+
             doc = {u'elements': ' '.join(elements),
                    u'numPlayers': numPlayers,
                    u'initialCash': initialCash,
@@ -594,7 +601,9 @@ def queryCase((dbHost, dbPort, dbName, elements, numPlayers,
                    u'fops': fops,
                    u'costSGL': costSGL,
                    u'costISL': costISL,
-                   u'results': results}
+                   u'results': results,
+                   u'demands': json.dumps(demands)
+                    }
             db.results.insert_one(doc)
 
         if dbName is not None:
@@ -697,24 +706,24 @@ if __name__ == '__main__':
         # hardcoded_designs = [x.strip() for x in hardcoded_designs]
         hardcoded_designs = (
             "1.SmallSat@MEO6,oSGL,oISL 1.SmallSat@MEO5,oSGL,oISL 1.MediumSat@MEO4,VIS,SAR,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.SmallSat@MEO2,oSGL,oISL 2.MediumSat@MEO1,VIS,SAR,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.SmallSat@MEO6,oSGL,oISL 1.SmallSat@MEO5,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.SmallSat@MEO2,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,DAT,oSGL,oISL 1.MediumSat@MEO4,VIS,SAR,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,DAT,oSGL,oISL 2.MediumSat@MEO1,VIS,SAR,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,DAT,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,DAT,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,VIS,SAR,oSGL,oISL 1.MediumSat@MEO4,VIS,SAR,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,VIS,SAR,oSGL,oISL 2.MediumSat@MEO1,VIS,SAR,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,VIS,SAR,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,VIS,SAR,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.MediumSat@MEO6,VIS,oSGL,oISL 1.MediumSat@MEO5,VIS,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,oSGL,oISL 2.MediumSat@MEO2,VIS,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.MediumSat@MEO6,VIS,oSGL,oISL 1.MediumSat@MEO5,VIS,DAT,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,oSGL,oISL 2.MediumSat@MEO2,VIS,DAT,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-            "1.MediumSat@MEO6,VIS,SAR,oSGL,oISL 1.MediumSat@MEO5,VIS,SAR,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,SAR,oSGL,oISL 2.MediumSat@MEO2,VIS,SAR,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
-
-            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
-            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.SmallSat@MEO%d,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
-            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,DAT,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
-            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
-            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,DAT,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,DAT,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,DAT,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
-            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
-            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.MediumSat@MEO%d,VIS,oSGL,oISL 1.MediumSat@MEO%d,VIS,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,oSGL,oISL 2.MediumSat@MEO%d,VIS,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,oSGL,oISL 3.MediumSat@MEO%d,VIS,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
-            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.MediumSat@MEO%d,VIS,oSGL,oISL 1.MediumSat@MEO%d,VIS,DAT,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,oSGL,oISL 2.MediumSat@MEO%d,VIS,DAT,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,oSGL,oISL 3.MediumSat@MEO%d,VIS,DAT,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
-            "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            # "1.SmallSat@MEO6,oSGL,oISL 1.SmallSat@MEO5,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.SmallSat@MEO2,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            # "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,DAT,oSGL,oISL 1.MediumSat@MEO4,VIS,SAR,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,DAT,oSGL,oISL 2.MediumSat@MEO1,VIS,SAR,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            # "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,DAT,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,DAT,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            # "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,VIS,SAR,oSGL,oISL 1.MediumSat@MEO4,VIS,SAR,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,VIS,SAR,oSGL,oISL 2.MediumSat@MEO1,VIS,SAR,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            # "1.SmallSat@MEO6,oSGL,oISL 1.MediumSat@MEO5,VIS,SAR,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO3,oSGL,oISL 2.MediumSat@MEO2,VIS,SAR,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            # "1.MediumSat@MEO6,VIS,oSGL,oISL 1.MediumSat@MEO5,VIS,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,oSGL,oISL 2.MediumSat@MEO2,VIS,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            # "1.MediumSat@MEO6,VIS,oSGL,oISL 1.MediumSat@MEO5,VIS,DAT,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,oSGL,oISL 2.MediumSat@MEO2,VIS,DAT,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            # "1.MediumSat@MEO6,VIS,SAR,oSGL,oISL 1.MediumSat@MEO5,VIS,SAR,oSGL,oISL 1.LargeSat@MEO4,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO3,VIS,SAR,oSGL,oISL 2.MediumSat@MEO2,VIS,SAR,oSGL,oISL 2.LargeSat@MEO1,VIS,SAR,DAT,oSGL,oISL 1.GroundSta@SUR1,oSGL 2.GroundSta@SUR4,oSGL",
+            #
+            # "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            # "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.SmallSat@MEO%d,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            # "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,DAT,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            # "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            #"1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,DAT,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,DAT,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,DAT,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            # "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.SmallSat@MEO%d,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.SmallSat@MEO%d,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.SmallSat@MEO%d,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            # "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.MediumSat@MEO%d,VIS,oSGL,oISL 1.MediumSat@MEO%d,VIS,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,oSGL,oISL 2.MediumSat@MEO%d,VIS,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,oSGL,oISL 3.MediumSat@MEO%d,VIS,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            # "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.MediumSat@MEO%d,VIS,oSGL,oISL 1.MediumSat@MEO%d,VIS,DAT,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,oSGL,oISL 2.MediumSat@MEO%d,VIS,DAT,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,oSGL,oISL 3.MediumSat@MEO%d,VIS,DAT,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
+            # "1.GroundSta@SUR%d,oSGL 2.GroundSta@SUR%d,oSGL 3.GroundSta@SUR%d,oSGL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 1.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 2.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.MediumSat@MEO%d,VIS,SAR,oSGL,oISL 3.LargeSat@MEO%d,VIS,SAR,DAT,oSGL,oISL"%(1,3,5,1,3,6,3,5,2,5,1,4),
         )
 
         for design in hardcoded_designs:
@@ -726,18 +735,20 @@ if __name__ == '__main__':
             else:
                 numPlayers = 2
 
-            for ops, fops in [('n', 'd6,a,1'), ('d6,a,1', 'n'), ('d6,a,1', 'x')]:#[('d6,a,1', 'x')]:#
+            for ops, fops in [('d6,a,1', 'x')]:#[('n', 'd6,a,1'), ('d6,a,1', 'n'), ('d6,a,1', 'x')]:#[('d6,a,1', 'x')]:#
                 if 'x' in fops:
-                    for costsgl in [a for a in range(2600, 3001, 200)]:# if a not in range(0, 1501,100)]:
+                    # costsgl = costisl = 'v'
+                    for costsgl in [a for a in range(0, 1001, 1000)]:# if a not in range(0, 1501,100)]:
                         # print "cost SGL:", costsgl
-                        costisl = costsgl / 2.
-                        fops = "x%d,%d,6,a,1"%(costsgl,costisl)
+                        costisl = costsgl/2
+                        fops = "x%s,%s,6,a,1"%(str(costsgl),str(costisl))
                         print "fops:", fops
                         execute(args.dbHost, args.dbPort, None, args.start, args.stop,
                             [design],
                             numPlayers, args.initialCash, args.numTurns,
                             ops, fops)
                 else:
+                    print "fops:", fops
                     execute(args.dbHost, args.dbPort, None, args.start, args.stop,
                             [design],
                                 numPlayers, args.initialCash, args.numTurns,

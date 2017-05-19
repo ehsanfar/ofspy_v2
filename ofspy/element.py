@@ -47,7 +47,12 @@ class Element(Entity):
         else:
             self._initModules = modules[:]
         self.modules = self._initModules
-    
+        self.sensedDemandCounter = 0
+        self.sensedDemandAvg = 0
+
+    def getLocation(self):
+        return str(self.location)
+
     def getContentsSize(self):
         """
         Gets the total size of modules in this element.
@@ -504,7 +509,14 @@ class Element(Entity):
                 any(m.isSensor()
                     and m.couldSense(data)
                     for m in self.modules)
-    
+
+    def addDemand(self, demand):
+        if self.canSense(demand):
+            self.sensedDemandCounter += 1
+            defaultvalue = demand.getValueAt(0)
+            self.sensedDemandAvg = ((self.sensedDemandCounter - 1) * self.sensedDemandAvg + defaultvalue) / float(
+                self.sensedDemandCounter)
+
     def canSense(self, demand):
         """
         Checks if this element could sense data (state-dependent).
@@ -515,10 +527,12 @@ class Element(Entity):
         data = demand.generateData()
         if self.isCommissioned() \
                 and self.couldSense(data):
-            return (any(m.isSensor()
+            can = (any(m.isSensor()
                        and m.canSense(self.location, demand)
                        for m in self.modules)
                     and self.canStore(data))
+
+            return can
         return False
         
     def senseAndStore(self, contract):
@@ -651,6 +665,9 @@ class Element(Entity):
                    for m in self.modules
                    if m.isTransceiver()
                    and m.protocol == protocol)
+
+    def getSensedDemands(self):
+        return (self.sensedDemandCounter, self.sensedDemandAvg)
     
     def init(self, sim):
         """

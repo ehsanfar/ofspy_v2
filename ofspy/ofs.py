@@ -111,8 +111,10 @@ class OFS(object):
         """
         self.sim.execute()
         results = []
+        demands = []
         for federate in [federate for federation in self.context.federations
                          for federate in federation.federates]:
             results.append((federate.initialCash, federate.cash))
+            demands.append(federate.getCostRewards())
 
-        return results
+        return (results, demands)

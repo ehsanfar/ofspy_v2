@@ -36,7 +36,7 @@ class Satellite(Element):
         """
         Element.__init__(self, name=name, cost=cost,
                          capacity=capacity, modules=modules)
-    
+
     def canCommission(self, location, context):
         """
         Checks if this satellite can be commissioned at a location.

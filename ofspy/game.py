@@ -32,6 +32,8 @@ from .federate import Federate
 from .operations import Operations
 from .operations_grb import DynamicOperations
 from .operations_grb import FixedCostDynamicOperations
+from .operations_grb import VarCostDynamicOperations
+
 
 from .storage import Storage
 from .sensor import Sensor
@@ -379,6 +381,13 @@ class Game(object):
                                  fops).group(0).split(',')
                 costSGL = int(args[0])
                 costISL = int(args[1])
+
+                if not args:
+                    args = re.search('x(\s+,\s+,\d+,(?:a|\d+),\d+)',
+                                     fops).group(0).split(',')
+                    costSGL = args[0]
+                    costISL = args[1]
+
                 planningHorizon = int(args[2])
                 if args[3]== 'a':
                     storagePenalty = None
@@ -409,7 +418,8 @@ class Game(object):
                 costSGL = int(args[0])
                 costISL = int(args[1])
                 planningHorizon = int(args[2])
-            foperations = FixedCostDynamicOperations(
+
+            foperations = VarCostDynamicOperations(
                 planningHorizon=planningHorizon,
                 storagePenalty=storagePenalty,
                 islPenalty=islPenalty,

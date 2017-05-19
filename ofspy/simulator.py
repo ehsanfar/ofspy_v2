@@ -61,6 +61,9 @@ class Simulator(Observable):
                 entity.tock()
                 # print [[g.cash for g in f.getFederates()] for f in entity.federations]
             self.time += self.timeStep
+            if self.time%10 == 0:
+                print "time: ", self.time
+
             self.trigger('advance', self.time)
             if self.isComplete():
                 self.trigger('complete', self.time)
@@ -69,6 +72,19 @@ class Simulator(Observable):
         self.init()
         while not self.isComplete():
             self.advance()
+
+        fedlist = []
+        # for e in self.entities:
+        #     print "entity: ", e
+        #     for f in e.federations:
+        #         print "federation: ", f
+        #         for g in f.getFederates():
+        #             print "federate:", g
+        #             fedlist.append(g)
+
+        # for fed in fedlist:
+        #     print "Federate Name:", fed
+        #     fed.showCostRewards()
     
     def isComplete(self):
         return (self.time >= self.maxTime
