@@ -48,7 +48,10 @@ class Element(Entity):
             self._initModules = modules[:]
         self.modules = self._initModules
         self.sensedDemandCounter = 0
+        self.allDemandCounter = 0
         self.sensedDemandAvg = 0
+        self.demandProb = 0.5
+        self.storageOpportunity = 0
 
     def getLocation(self):
         return str(self.location)
@@ -510,12 +513,16 @@ class Element(Entity):
                     and m.couldSense(data)
                     for m in self.modules)
 
-    def addDemand(self, demand):
-        if self.canSense(demand):
-            self.sensedDemandCounter += 1
-            defaultvalue = demand.getValueAt(0)
-            self.sensedDemandAvg = ((self.sensedDemandCounter - 1) * self.sensedDemandAvg + defaultvalue) / float(
-                self.sensedDemandCounter)
+    def addDemand(self, value, canSense):
+        #if self.canSense(demand):
+        self.sensedDemandCounter += 1. if canSense else 0
+        self.allDemandCounter += 1.
+        self.demandProb = (10*self.demandProb + self.sensedDemandCounter)/(10+self.allDemandCounter)
+
+        self.sensedDemandAvg = ((self.sensedDemandCounter - 1) * self.sensedDemandAvg + value) / float(
+            self.sensedDemandCounter+1)
+
+        # print "Update demand counter values:", self.sensedDemandCounter, self.sensedDemandAvg
 
     def canSense(self, demand):
         """
@@ -668,6 +675,12 @@ class Element(Entity):
 
     def getSensedDemands(self):
         return (self.sensedDemandCounter, self.sensedDemandAvg)
+
+    def getDemandProb(self):
+        return self.demandProb
+
+    def setStorageOpportunity(self, storageOpportunity):
+        self.storageOpportunity = storageOpportunity
     
     def init(self, sim):
         """

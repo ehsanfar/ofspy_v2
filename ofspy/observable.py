@@ -29,10 +29,12 @@ class Observable(object):
                     handler(*args)
                 
     def on(self, events, handler):
+        # print events, handler
         for event in events.split(' '):
             if event not in self._handlers:
                 self._handlers[event] = []
             self._handlers[event].append(handler)
+
     
     def off(self, events, handler):
         for event in events.split(' '):

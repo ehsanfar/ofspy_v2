@@ -23,7 +23,7 @@ import logging
 
 from .controller import Controller
 from .operations import Operations
-from .algorithms import list2dict
+# from .algorithms import list2dict
 
 class Federate(Controller):
     def __init__(self, name=None, initialCash=0, elements=None,

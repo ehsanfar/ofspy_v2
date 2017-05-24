@@ -247,6 +247,7 @@ class CanvasOFS(Canvas):
                          text=demand.name,
                          fill='black' if elapsedTime is None else 'white',
                          anchor='n')
+
         self.drawData(demand.generateData(), location)
     
     def drawContext(self):

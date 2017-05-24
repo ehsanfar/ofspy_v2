@@ -33,8 +33,10 @@ class FrameOFS(Frame):
         
         canvas.pack(side=LEFT, fill=BOTH)
         log.pack(side=RIGHT, fill=BOTH)
-        
+
+        # print "Frame: before deraw"
         self.after(100, canvas.draw)
+        # print "Frame: after draw"
         
         root.title("Orbital Federates Simulation")
         if "nt" == os.name:

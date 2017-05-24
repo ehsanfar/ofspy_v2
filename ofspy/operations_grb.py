@@ -641,7 +641,7 @@ class FixedCostDynamicOperations(DynamicOperations):
                 J = LinExpr()   # objective function
 
                 demands = [e for e in context.currentEvents if e.isDemand()]
-                
+
                 ownElements = [e for e in controller.getElements()
                     if e in federate.elements]
                 ownSatellites = [e for e in ownElements if e.isSpace()]
@@ -1251,6 +1251,10 @@ class VarCostDynamicOperations(DynamicOperations):
                    if context.maxTime is None else
                    min(context.maxTime, context.time + self.planningHorizon))
         allElements = controller.getElements()
+        for a in allElements:
+            if 'Sat' in a.name:
+                a.trigger('probability', a)
+
         allSatellites = [e for e in allElements if e.isSpace()]
         allSatellitesISL = [e for e in allSatellites
                             if any(m.isTransceiver() and m.isISL()
@@ -1305,7 +1309,11 @@ class VarCostDynamicOperations(DynamicOperations):
                         S[i].insert(j, lp.addVar(vtype=GRB.BINARY,
                             name='{}-S-{}'.format(satellite.name, demand.name)))
                         # constrain sensing per satellite
-                        lp.addConstr(S[i][j] <= (1 if satellite.canSense(demand) else 0),
+                        canSense = satellite.canSense(demand)
+                        satellite.addDemand(demand.getValueAt(0), canSense)
+                        # print "All demand counter: ", satellite.sensedDemandCounter, satellite.allDemandCounter
+
+                        lp.addConstr(S[i][j] <= (1 if canSense else 0),
                                      '{} can sense {}'.format(satellite.name, demand.name))
                     for phenomenon in phenomena:
                         r = LinExpr()
@@ -1340,22 +1348,18 @@ class VarCostDynamicOperations(DynamicOperations):
                             E_d[t][i].insert(j, lp.addVar(vtype=GRB.BINARY,
                                 name='{}-E-{}@{}'.format(satellite.name, demand.name, time)))
                             # penalty for opportunity cost
-                            stoPen = (self.storagePenalty
-                                      if self.storagePenalty is not None
-                                      else self.getStoragePenalty(satellite, context, time))
+                            stoPen = (self.getStoragePenalty(satellite, context, time))
 
-                            print "Demand storage penalty:", stoPen
+                            # print "Demand storage penalty:", stoPen
                             J.add(E_d[t][i][j], demand.size*stoPen)
                         for j, contract in enumerate(ownContracts):
                             # satellite i stores data for contract j
                             E_c[t][i].insert(j, lp.addVar(vtype=GRB.BINARY,
                                 name='{}-E-{}@{}'.format(satellite.name, contract.name, time)))
                             # penalty for opportunity cost
-                            stoPen = (self.storagePenalty
-                                      if self.storagePenalty is not None
-                                      else self.getStoragePenalty(satellite, context, time))
+                            stoPen = (self.getStoragePenalty(satellite, context, time))
 
-                            print "contract storage penalty: ", stoPen
+                            # print "contract storage penalty: ", stoPen
                             J.add(E_c[t][i][j], contract.demand.size*stoPen)
                         for phenomenon in phenomena:
                             r = LinExpr()

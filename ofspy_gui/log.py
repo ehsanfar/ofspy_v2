@@ -117,6 +117,7 @@ class LogOFS(Frame):
         element.on('transfer', self.elementTransfer)
         element.on('transmit', self.elementTransmit)
         element.on('receive', self.elementReceive)
+        element.on('probability', self.elementProbability)
         for module in element.modules:
             self.handleModule(module, color)
             
@@ -152,6 +153,7 @@ class LogOFS(Frame):
         self.clear()
         self.append(context, 'advanced to time {}\n'.format(time))
     def contextReveal(self, context, event):
+
         self.append(context, 'revealed {} in sector {}\n'.format(
             event.name, event.sector+1))
     def contextResolve(self, context, disturbance):
@@ -189,6 +191,7 @@ class LogOFS(Frame):
         self.append(element, 'stored {}\n'.format(
             data.contract.demand.name))
     def elementSense(self, element, contract):
+        # print "SENSES"
         self.append(element, 'sensed {}\n'.format(
             contract.demand.name))
     def elementTransfer(self, element, data, origin, destination):
@@ -200,6 +203,10 @@ class LogOFS(Frame):
     def elementReceive(self, element, protocol, data, txElement):
         self.append(element, 'received {} from {} using {}\n'.format(
             data.contract.demand.name, txElement.name, protocol))
+    def elementProbability(self, element):
+        # print "INside element probability"
+        self.append(element, 'probability {} storage opportunity {}\n'.format(
+            element.getDemandProb(), element.storageOpportunity))
     def moduleStore(self, module, data):
         self.append(module, 'stored {}\n'.format(
             data.contract.demand.name))
