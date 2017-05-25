@@ -61,6 +61,7 @@ class Federate(Controller):
         self.receivedDemand = {}
         self.issuedDemand = {}
         self.costHistory = {}
+        self.groundSections = None
         self.name = name
 
     def getElements(self):
@@ -199,9 +200,9 @@ class Federate(Controller):
 
     def getCost(self, protocol, federate=None):
 
-        key = '{}-{}'.format(federate, protocol)
-        return self.costDic[protocol] if key not in self.costDic else self.costDic[key]
-        # name_dic = {'P1': 300, 'P2': 600, 'P3': 900}
+        # key = '{}-{}'.format(federate, protocol)
+        # return self.costDic[protocol] if key not in self.costDic else self.costDic[key]
+        name_dic = {'P1': 600, 'P2': 600, 'P3': 600}
         # c = 200*np.round(10*np.random.normal()) +
 
         # mutual_cost = []
@@ -217,7 +218,7 @@ class Federate(Controller):
         #     self.costHistory[protocol] = []
         #
         # self.costHistory[protocol].append(c)
-        # return name_dic[self.name]
+        return name_dic[self.name]
         # return
 
     # def addContractSignal(self, issuer, protocol, cost):

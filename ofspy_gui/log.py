@@ -206,7 +206,7 @@ class LogOFS(Frame):
     def elementProbability(self, element):
         # print "INside element probability"
         self.append(element, 'probability {} storage opportunity {}\n'.format(
-            element.getDemandProb(), element.storageOpportunity))
+            round(100*element.getDemandProb(),2), int(element.storageOpportunity)))
     def moduleStore(self, module, data):
         self.append(module, 'stored {}\n'.format(
             data.contract.demand.name))

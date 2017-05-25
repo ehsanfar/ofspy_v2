@@ -135,6 +135,7 @@ class DynamicOperations(Operations):
                 for i, satellite in enumerate(satellites):
                     E_d[t].insert(i, [])
                     E_c[t].insert(i, [])
+                    stoPen = self.getStoragePenalty(satellite, context, time, type='independent')
                     for j, demand in enumerate(demands):
                         # satellite i stores data for new contract j
                         E_d[t][i].insert(j, lp.addVar(vtype=GRB.BINARY, 
@@ -142,7 +143,7 @@ class DynamicOperations(Operations):
                         # penalty for opportunity cost
                         J.add(E_d[t][i][j], demand.size*(self.storagePenalty 
                             if self.storagePenalty is not None 
-                            else self.getStoragePenalty(satellite, context, time, type = 'independent')))
+                            else stoPen))
                     for j, contract in enumerate(contracts):
                         # satellite i stores data for contract j
                         E_c[t][i].insert(j, lp.addVar(vtype=GRB.BINARY,
@@ -150,7 +151,7 @@ class DynamicOperations(Operations):
                         # penalty for opportunity cost
                         J.add(E_c[t][i][j], contract.demand.size*(self.storagePenalty
                               if self.storagePenalty is not None
-                              else self.getStoragePenalty(satellite, context, time, type = 'independent')))
+                              else stoPen))
                     for phenomenon in phenomena:
                         r = LinExpr()
                         for j, demand in enumerate(demands):
@@ -684,6 +685,9 @@ class FixedCostDynamicOperations(DynamicOperations):
                     # print "Locations of stations and sattellites:", [s.getLocation() for s in ownStations], [s.getLocation() for s in ownSatellites]
                     E_d.insert(t, [])
                     E_c.insert(t, [])
+                    stoPen = (self.storagePenalty
+                                  if self.storagePenalty is not None
+                                  else self.getStoragePenalty(satellite, context, time))
                     for i, satellite in enumerate(ownSatellites):
                         E_d[t].insert(i, [])
                         E_c[t].insert(i, [])
@@ -692,9 +696,7 @@ class FixedCostDynamicOperations(DynamicOperations):
                             E_d[t][i].insert(j, lp.addVar(vtype=GRB.BINARY,
                                 name='{}-E-{}@{}'.format(satellite.name, demand.name, time)))
                             # penalty for opportunity cost
-                            stoPen = (self.storagePenalty
-                                  if self.storagePenalty is not None
-                                  else self.getStoragePenalty(satellite, context, time))
+
                             # print "Demand storage penalty: ", self.storagePenalty, stoPen
 
                             J.add(E_d[t][i][j], demand.size*stoPen)
@@ -703,9 +705,6 @@ class FixedCostDynamicOperations(DynamicOperations):
                             E_c[t][i].insert(j, lp.addVar(vtype=GRB.BINARY,
                                 name='{}-E-{}@{}'.format(satellite.name, contract.name, time)))
                             # penalty for opportunity cost
-                            stoPen = (self.storagePenalty
-                                  if self.storagePenalty is not None
-                                  else self.getStoragePenalty(satellite, context, time))
                             # print "Contract storage penalty: ", self.storagePenalty, stoPen
                             J.add(E_c[t][i][j], contract.demand.size*stoPen)
                         for phenomenon in phenomena:
@@ -1310,7 +1309,7 @@ class VarCostDynamicOperations(DynamicOperations):
                             name='{}-S-{}'.format(satellite.name, demand.name)))
                         # constrain sensing per satellite
                         canSense = satellite.canSense(demand)
-                        satellite.addDemand(demand.getValueAt(0), canSense)
+                        satellite.addDemand([demand.getValueAt(t) for t in range(6)], canSense)
                         # print "All demand counter: ", satellite.sensedDemandCounter, satellite.allDemandCounter
 
                         lp.addConstr(S[i][j] <= (1 if canSense else 0),
@@ -1343,13 +1342,12 @@ class VarCostDynamicOperations(DynamicOperations):
                     for i, satellite in enumerate(ownSatellites):
                         E_d[t].insert(i, [])
                         E_c[t].insert(i, [])
+                        stoPen = self.getStoragePenalty(satellite, context, time)
                         for j, demand in enumerate(demands):
                             # satellite i stores data for new contract j
                             E_d[t][i].insert(j, lp.addVar(vtype=GRB.BINARY,
                                 name='{}-E-{}@{}'.format(satellite.name, demand.name, time)))
                             # penalty for opportunity cost
-                            stoPen = (self.getStoragePenalty(satellite, context, time))
-
                             # print "Demand storage penalty:", stoPen
                             J.add(E_d[t][i][j], demand.size*stoPen)
                         for j, contract in enumerate(ownContracts):
@@ -1357,7 +1355,6 @@ class VarCostDynamicOperations(DynamicOperations):
                             E_c[t][i].insert(j, lp.addVar(vtype=GRB.BINARY,
                                 name='{}-E-{}@{}'.format(satellite.name, contract.name, time)))
                             # penalty for opportunity cost
-                            stoPen = (self.getStoragePenalty(satellite, context, time))
 
                             # print "contract storage penalty: ", stoPen
                             J.add(E_c[t][i][j], contract.demand.size*stoPen)

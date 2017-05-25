@@ -49,7 +49,7 @@ class Element(Entity):
         self.modules = self._initModules
         self.sensedDemandCounter = 0
         self.allDemandCounter = 0
-        self.sensedDemandAvg = 0
+        self.sensedDemandAvg = None
         self.demandProb = 0.5
         self.storageOpportunity = 0
 
@@ -517,10 +517,14 @@ class Element(Entity):
         #if self.canSense(demand):
         self.sensedDemandCounter += 1. if canSense else 0
         self.allDemandCounter += 1.
-        self.demandProb = (10*self.demandProb + self.sensedDemandCounter)/(10+self.allDemandCounter)
+        self.demandProb = (100*self.demandProb + self.sensedDemandCounter)/(100+self.allDemandCounter)
 
-        self.sensedDemandAvg = ((self.sensedDemandCounter - 1) * self.sensedDemandAvg + value) / float(
-            self.sensedDemandCounter+1)
+
+        if self.sensedDemandAvg:
+            weightedavg = [self.sensedDemandCounter * x for x in self.sensedDemandAvg]
+            self.sensedDemandAvg = [sum(x)/(1+self.sensedDemandCounter) for x in zip(weightedavg, value)]
+        else:
+            self.sensedDemandAvg = value
 
         # print "Update demand counter values:", self.sensedDemandCounter, self.sensedDemandAvg
 
@@ -673,8 +677,8 @@ class Element(Entity):
                    if m.isTransceiver()
                    and m.protocol == protocol)
 
-    def getSensedDemands(self):
-        return (self.sensedDemandCounter, self.sensedDemandAvg)
+    def getDemandValue(self):
+        return self.sensedDemandAvg
 
     def getDemandProb(self):
         return self.demandProb
