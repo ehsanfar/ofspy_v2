@@ -49,9 +49,10 @@ class Element(Entity):
         self.modules = self._initModules
         self.sensedDemandCounter = 0
         self.allDemandCounter = 0
-        self.sensedDemandAvg = None
+        self.sensedDemandAvg = [1000, 1000, 500, 500, 500, -200]
         self.demandProb = 0.5
-        self.storageOpportunity = 0
+        self.storageOpportunity = 6*[0]
+        self.time = None
 
     def getLocation(self):
         return str(self.location)

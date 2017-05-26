@@ -135,7 +135,7 @@ class DynamicOperations(Operations):
                 for i, satellite in enumerate(satellites):
                     E_d[t].insert(i, [])
                     E_c[t].insert(i, [])
-                    stoPen = self.getStoragePenalty(satellite, context, time, type='independent')
+                    stoPen = self.getStoragePenalty(satellite, context, minTime, t, type='independent')
                     for j, demand in enumerate(demands):
                         # satellite i stores data for new contract j
                         E_d[t][i].insert(j, lp.addVar(vtype=GRB.BINARY, 
@@ -687,7 +687,7 @@ class FixedCostDynamicOperations(DynamicOperations):
                     E_c.insert(t, [])
                     stoPen = (self.storagePenalty
                                   if self.storagePenalty is not None
-                                  else self.getStoragePenalty(satellite, context, time))
+                                  else self.getStoragePenalty(satellite, context, minTime, t))
                     for i, satellite in enumerate(ownSatellites):
                         E_d[t].insert(i, [])
                         E_c[t].insert(i, [])
@@ -1252,6 +1252,9 @@ class VarCostDynamicOperations(DynamicOperations):
         allElements = controller.getElements()
         for a in allElements:
             if 'Sat' in a.name:
+                # print "Min and max time:", minTime, maxTime
+                stoPen = self.getStoragePenalty(a, context, minTime, 0)
+                print "Operatins_grb, storage penalty:", stoPen
                 a.trigger('probability', a)
 
         allSatellites = [e for e in allElements if e.isSpace()]
@@ -1342,7 +1345,7 @@ class VarCostDynamicOperations(DynamicOperations):
                     for i, satellite in enumerate(ownSatellites):
                         E_d[t].insert(i, [])
                         E_c[t].insert(i, [])
-                        stoPen = self.getStoragePenalty(satellite, context, time)
+                        stoPen = self.getStoragePenalty(satellite, context, minTime, t)
                         for j, demand in enumerate(demands):
                             # satellite i stores data for new contract j
                             E_d[t][i].insert(j, lp.addVar(vtype=GRB.BINARY,

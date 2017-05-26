@@ -202,7 +202,7 @@ class Federate(Controller):
 
         # key = '{}-{}'.format(federate, protocol)
         # return self.costDic[protocol] if key not in self.costDic else self.costDic[key]
-        name_dic = {'P1': 600, 'P2': 600, 'P3': 600}
+        name_dic = {'P1': 300, 'P2': 300, 'P3': 300}
         # c = 200*np.round(10*np.random.normal()) +
 
         # mutual_cost = []
