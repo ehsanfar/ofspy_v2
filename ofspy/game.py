@@ -31,7 +31,7 @@ from .federation import Federation
 from .federate import Federate
 from .operations import Operations
 from .operations_grb import DynamicOperations
-from .operations_grb import FixedCostDynamicOperations
+# from .operations_grb import FixedCostDynamicOperations
 from .operations_grb import VarCostDynamicOperations
 
 

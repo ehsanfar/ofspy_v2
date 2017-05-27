@@ -49,36 +49,57 @@ class Operations(object):
             return ['ME%d'%((i-1)%6+1) for i in range(element_section, element_section+6)]
 
 
-    def finddeltatime(self, stationloc, elementloc, groundSections):
-        station_section = int(re.search(r'.+(\d)', stationloc).group(1))
+    # def finddeltatime(self, stationloc, elementloc, groundSections):
+    #     station_section = int(re.search(r'.+(\d)', stationloc).group(1))
+    #     element_section = int(re.search(r'.+(\d)', elementloc).group(1))
+    #
+    #     contract_deltatime = []
+    #     loc_diff = 0
+    #     if 'LE' in elementloc:
+    #         if element_section % 2 != station_section % 2:
+    #             return None
+    #
+    #     if element_section == station_section:
+    #         return None
+    #
+    #     for i in range(element_section+1, station_section+1) if station_section>element_section else range(element_section+1, 7)+range(0, station_section+1):
+    #             if 'LE' in elementloc:
+    #                 if i%2 == element_section%2 and i in groundSections:
+    #                     contract_deltatime.append(station_section-i if station_section>i else (6-i)+station_section)
+    #                     loc_diff += 1
+    #
+    #             if 'ME' in elementloc and i in groundSections:
+    #                 contract_deltatime.append(station_section - i if station_section > i else (6 - i) + station_section)
+    #                 loc_diff += 1
+    #
+    #     return contract_deltatime
+
+    def findnextstationandsteps(self, elementloc, groundSections):
         element_section = int(re.search(r'.+(\d)', elementloc).group(1))
-
-        contract_deltatime = []
-        loc_diff = 0
+        steps = []
+        N = 0
         if 'LE' in elementloc:
-            if element_section % 2 != station_section % 2:
-                return None
+            N = 3
+        elif 'ME' in elementloc:
+            N = 6
 
-        if element_section == station_section:
-            return None
+        for i in range(N):
+            element_section += 6/N
+            element_section = (element_section-1)%6+1
+            steps.append(element_section)
+            if element_section in groundSections:
+                return (element_section, steps)
 
-        for i in range(element_section+1, station_section+1) if station_section>element_section else range(element_section+1, 7)+range(0, station_section+1):
-                if 'LE' in elementloc:
-                    if i%2 == element_section%2 and i in groundSections:
-                        contract_deltatime.append(station_section-i if station_section>i else (6-i)+station_section)
-                        loc_diff += 1
-
-                if 'ME' in elementloc and i in groundSections:
-                    contract_deltatime.append(station_section - i if station_section > i else (6 - i) + station_section)
-                    loc_diff += 1
-
-        return contract_deltatime
+        return (None, [])
 
 
-    def getStoragePenalty(self, element, context, time, timestep, type = None):
-        print element, element.time, time, timestep
-        if element.time == time:
-            storagelist = element.storageOpportunity
+
+
+
+    def getStoragePenalty(self, phenomenon, element, context, time, timestep, type = None):
+        # print element, element.time, time, timestep
+        if element.time[phenomenon] == time:
+            storagelist = element.storagePenalty[phenomenon]
             return storagelist[timestep%len(storagelist)]
         # else:
         #
@@ -116,7 +137,7 @@ class Operations(object):
             allstations = [e for e in myfederate.getElements() if e.isGround()]
             if not myfederate.groundSections:
                 myfederate.groundSections = [int(re.search(r'.+(\d)', s.getLocation()).group(1)) for s in allstations]
-                print "Element ground Sections:", myfederate.groundSections
+                # print "Element ground Sections:", myfederate.groundSections
 
             groundSections = myfederate.groundSections
             return 0
@@ -125,44 +146,60 @@ class Operations(object):
             allstations = list(itertools.chain.from_iterable([[e for e in f.getElements() if e.isGround()] for f in allfederates]))
             if not self.groundSections:
                 self.groundSections = [int(re.search(r'.+(\d)', s.getLocation()).group(1)) for s in allstations]
-                print "All Ground Sections:", self.groundSections
+                # print "All Ground Sections:", self.groundSections
 
             groundSections = self.groundSections
 
-        element.time = time
+        element.time[phenomenon] = time
         possiblelocations = self.findpossiblelocations(element.getLocation())
         storagepenaltylist = []
-        demand_value = element.getDemandValue()
+        demand_value = element.getDemandValue(phenomenon)
+
+        nextstation, step = self.findnextstationandsteps(element.getLocation(), groundSections)
+
+        prob = element.getDemandProb(phenomenon)
+        # print element.getLocation(), groundSections, nextstation, step
+
+        storagepenaltylist = []
 
         for mylocation in possiblelocations:
-            storage_opportunitycost = []
+            nextstation, step = self.findnextstationandsteps(mylocation, groundSections)
+            # print "Operation: mylocation, nextstation, steps:", mylocation, nextstation, step
+            owners = [context.getElementOwner(st) for st in allstations if int(re.search(r'.+(\d)', st.getLocation()).group(1)) == nextstation]
+            # print "Owners: ", owners
+            costSGLlist = [0 if o is myfederate else o.getCost('oSGL') for o in owners]
+            costSGL = min(costSGLlist)
+            deltatime = [nextstation - s if nextstation>=s else nextstation+6-s for s in step]
+            # print mylocation, nextstation, step, deltatime
+            storagepenalty = -1*int(sum([max((demand_value[min(dt, 5)] - costSGL)*prob, 0) for dt in deltatime]))
+            storagepenaltylist.append(storagepenalty)
 
-
-            for st in allstations:
-                st_loc = st.getLocation()
-                # print st_loc, mylocation
-                deltatime = self.finddeltatime(st_loc, mylocation, groundSections)
-                print "My location, station location, groundSecitons, delta time:", mylocation, st_loc, groundSections, deltatime
-                # print "Mylocation, stationlocation, allground locations:", mylocation, st_loc, deltatime
-                prob = element.getDemandProb()
-                # print element, " probability:", prob
-                owner = context.getElementOwner(st)
-                # print owner, myfederate
-                costSGL = 0 if owner is myfederate else owner.getCost('oSGL')
-                # print "counter:", counter
-                newstorageopportunitycost = 0
-                # print demand_value, deltatime
-                if deltatime:
-                    # print [(demand_value[min(dt, 5)] - costSGL) * prob for dt in deltatime]
-                    newstorageopportunitycost = sum([max((demand_value[min(dt, 5)] - costSGL)*prob, 0) for dt in deltatime])
-
-                # print "New storage opportunity cost:", prob, costSGL, newstorageopportunitycost
-                storage_opportunitycost.append(max(0, newstorageopportunitycost))
-
-            # print "Storage Opportunity cost:", storage_opportunitycost
-            storagepenaltylist.append(-round(max(storage_opportunitycost),2))
-
-        print "Update storage penalty:", storagepenaltylist
-        element.storageOpportunity = storagepenaltylist
+        #     for st in allstations:
+        #         st_loc = st.getLocation()
+        #         # print st_loc, mylocation
+        #         deltatime = self.finddeltatime(st_loc, mylocation, groundSections)
+        #         # print "My location, station location, groundSecitons, delta time:", mylocation, st_loc, groundSections, deltatime
+        #         # print "Mylocation, stationlocation, allground locations:", mylocation, st_loc, deltatime
+        #         prob = element.getDemandProb()
+        #         # print element, " probability:", prob
+        #         owner = context.getElementOwner(st)
+        #         # print owner, myfederate
+        #         costSGL = 0 if owner is myfederate else owner.getCost('oSGL')
+        #         # print "counter:", counter
+        #         newstorageopportunitycost = 0
+        #         # print demand_value, deltatime
+        #         if deltatime:
+        #             # print [(demand_value[min(dt, 5)] - costSGL) * prob for dt in deltatime]
+        #             newstorageopportunitycost = sum([max((demand_value[min(dt, 5)] - costSGL)*prob, 0) for dt in deltatime])
+        #
+        #         # print "New storage opportunity cost:", prob, costSGL, newstorageopportunitycost
+        #         storage_opportunitycost.append(max(0, newstorageopportunitycost))
+        #
+        #     # print "Storage Opportunity cost:", storage_opportunitycost
+        #     storagepenaltylist.append(-round(max(storage_opportunitycost),2))
+        #
+        # # print "Update storage penalty:", storagepenaltylist
+        # element.storageOpportunity = storagepenaltylist
+        element.storagePenalty[phenomenon] = storagepenaltylist
         return storagepenaltylist[timestep%len(storagepenaltylist)]
 

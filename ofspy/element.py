@@ -47,12 +47,17 @@ class Element(Entity):
         else:
             self._initModules = modules[:]
         self.modules = self._initModules
-        self.sensedDemandCounter = 0
+
+        phenomenaset = [p.phenomenon for p in self.modules if p.isSensor()]
+        print "Added phenomenon:", phenomenaset
+
+        phenomena = ['VIS', 'SAR']
+        self.sensedDemandCounter = {k: 0 for k in phenomena}
         self.allDemandCounter = 0
-        self.sensedDemandAvg = [1000, 1000, 500, 500, 500, -200]
-        self.demandProb = 0.5
-        self.storageOpportunity = 6*[0]
-        self.time = None
+        self.sensedDemandAvg = {k: [1000, 1000, 500, 500, 500, -200] for k in phenomena}
+        self.demandProb = {k: 0.1 for k in phenomena}
+        self.storagePenalty = {k: 0 for k in phenomena}
+        self.time = {k: 0 for k in phenomena}
 
     def getLocation(self):
         return str(self.location)
@@ -514,18 +519,29 @@ class Element(Entity):
                     and m.couldSense(data)
                     for m in self.modules)
 
-    def addDemand(self, value, canSense):
+    def addDemand(self, demand, canSense):
         #if self.canSense(demand):
-        self.sensedDemandCounter += 1. if canSense else 0
+        value = [demand.getValueAt(t) for t in range(6)]
+        phenomenon = demand.phenomenon
+
         self.allDemandCounter += 1.
-        self.demandProb = (100*self.demandProb + self.sensedDemandCounter)/(100+self.allDemandCounter)
+        if canSense:
+            if phenomenon in self.sensedDemandCounter:
+                self.sensedDemandCounter[phenomenon] += 1
 
 
-        if self.sensedDemandAvg:
-            weightedavg = [self.sensedDemandCounter * x for x in self.sensedDemandAvg]
-            self.sensedDemandAvg = [sum(x)/(1+self.sensedDemandCounter) for x in zip(weightedavg, value)]
-        else:
-            self.sensedDemandAvg = value
+            else:
+                self.sensedDemandCounter[phenomenon] = 1
+
+            if phenomenon in self.sensedDemandAvg:
+                weightedavg = [self.sensedDemandCounter[phenomenon] * x for x in self.sensedDemandAvg[phenomenon]]
+                self.sensedDemandAvg[phenomenon] = [sum(x)/(1+self.sensedDemandCounter[phenomenon]) for x in zip(weightedavg, value)]
+            else:
+                self.sensedDemandAvg[phenomenon] = value
+
+        self.demandProb = {p:(1 + self.sensedDemandCounter[p]) / (10 + self.allDemandCounter) for p in self.demandProb}
+        # print self.sensedDemandCounter, self.allDemandCounter, self.demandProb
+        # print self.sensedDemandAvg
 
         # print "Update demand counter values:", self.sensedDemandCounter, self.sensedDemandAvg
 
@@ -543,6 +559,9 @@ class Element(Entity):
                        and m.canSense(self.location, demand)
                        for m in self.modules)
                     and self.canStore(data))
+
+            # if can:
+                # print "Element:", self.name, " at ", self.location.sector, " can sense ", demand.name, " at ", demand.sector
 
             return can
         return False
@@ -678,14 +697,14 @@ class Element(Entity):
                    if m.isTransceiver()
                    and m.protocol == protocol)
 
-    def getDemandValue(self):
-        return self.sensedDemandAvg
+    def getDemandValue(self,phenomenon):
+        return self.sensedDemandAvg[phenomenon]
 
-    def getDemandProb(self):
-        return self.demandProb
+    def getDemandProb(self,phenomenon):
+        return self.demandProb[phenomenon]
 
-    def setStorageOpportunity(self, storageOpportunity):
-        self.storageOpportunity = storageOpportunity
+    # def setStorageOpportunity(self, storageOpportunity):
+    #     self.storageOpportunity = storageOpportunity
     
     def init(self, sim):
         """

@@ -117,7 +117,7 @@ class LogOFS(Frame):
         element.on('transfer', self.elementTransfer)
         element.on('transmit', self.elementTransmit)
         element.on('receive', self.elementReceive)
-        element.on('probability', self.elementProbability)
+        element.on('storage', self.elementProbability)
         for module in element.modules:
             self.handleModule(module, color)
             
@@ -205,8 +205,8 @@ class LogOFS(Frame):
             data.contract.demand.name, txElement.name, protocol))
     def elementProbability(self, element):
         # print "INside element probability"
-        self.append(element, 'probability {} storage opportunity {}\n'.format(
-            round(100*element.getDemandProb(),2), str(element.storageOpportunity)))
+        self.append(element, 'prob[VIS/SAR] {}/{} storage penalty[VIS/SAR] {}\n'.format(
+            round(100*element.getDemandProb('VIS')), round(100*element.getDemandProb('SAR')), str(element.storagePenalty)))
     def moduleStore(self, module, data):
         self.append(module, 'stored {}\n'.format(
             data.contract.demand.name))
